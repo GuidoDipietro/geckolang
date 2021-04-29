@@ -5,6 +5,8 @@ from colorama import init
 from termcolor import colored
 
 class GeckoParser(Parser):
+    debugfile = 'parser.out'
+
     tokens = GeckoLexer.tokens
 
     precedence = (
@@ -54,6 +56,10 @@ class GeckoParser(Parser):
     # Round dem floats
     def pprint_int(self, val):
         return self.bigint(int(val) if val%1==0 else round(val,3))
+    # Print final in cyan n stuff
+    def pprint_final(self, _id, val):
+        print(f"{colored('Final ','cyan')} {_id} = {self.pprint_int(val)}")
+
 
     # Evaluate AST
     def eval_tree(self, tree, prev=None):
@@ -94,8 +100,15 @@ class GeckoParser(Parser):
 
     ####### Grammar #######
 
-    @_('statement')
+    # yadda yadda root and recursion
+    @_('statements','')
     def root(self, p):
+        ...
+    @_('statements NEWLINE statement')
+    def statements(self, p):
+        pass
+    @_('statement')
+    def statements(self, p):
         pass
 
     ### STATEMENT ###
@@ -108,20 +121,20 @@ class GeckoParser(Parser):
     def statement(self, p):
         self.printed_ids = []
         # print(p.expr)
-        print(f"Result: {self.eval_tree(('tree',p.expr))}")
+        print(f"Result: {self.pprint_int(self.eval_tree(('tree',p.expr)))}")
 
     @_('ID ASSIGN expr')
     def statement(self, p):
         self.printed_ids = []
         self.ids[p.ID] = [p.expr, self.eval_tree(p.expr)]
-        print(f"Final {p.ID} = {self.pprint_int(self.ids[p.ID][1])}")
+        self.pprint_final(p.ID, self.ids[p.ID][1])
 
     @_('CALC ID')
     def statement(self, p):
         self.printed_ids = []
         tree = self.ids[p.ID][0]
         self.ids[p.ID][1] = self.eval_tree(tree)
-        print(f"Final {p.ID} = {self.pprint_int(self.ids[p.ID][1])}")
+        self.pprint_final(p.ID, self.ids[p.ID][1])
 
     ### EXPR ###
 
@@ -165,7 +178,7 @@ if __name__ == '__main__':
 
     while True:
         try:
-            print(colored('\ngecko> ', 'green'), end='')
+            print(colored('\ngecko> ', 'yellow',attrs=['bold']), end='')
             text = input()
         except EOFError:
             break

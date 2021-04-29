@@ -1,4 +1,7 @@
-root		:			statement
+root		:			statements
+
+statements	:			statements statement
+			|			statement
 
 statement	:			expr
 			|			ID = expr
