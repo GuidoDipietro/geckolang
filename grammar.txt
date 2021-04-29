@@ -1,0 +1,18 @@
+root		:			statement
+
+statement	:			expr
+			|			ID = expr
+			|			CALC ID
+			|			EXIT
+
+expr		:			expr + expr
+			|			expr - expr
+			|			expr * expr
+			|			expr / expr
+			|			expr ^ expr
+			|			- expr
+			|			MATHFUNC expr
+			|			( expr )
+			|			NUMBER
+			|			ID
+			|			expr THEN formula
