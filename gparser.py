@@ -70,7 +70,8 @@ class GeckoParser(Parser):
         # print(f"Printed ids: {self.printed_ids}")
         op = tree[0]
         # ('tree', root)
-        if op=='tree':
+        # ('assign', thing)
+        if op=='tree' or op=='assign':
             return self.eval_tree(tree[1],ctx=ctx)
         # ('number', float)
         elif op=='number':
@@ -98,17 +99,26 @@ class GeckoParser(Parser):
                         self.printed_ids += [tree[1]]
                 return val
             except:
-                print(f"Invalid ID {tree[1]}. Computed as 0.")
+                print(f"Invalid ID {tree[1]}.")
                 return 0
         # ('group',expr)
         elif op=='group':
             return self.eval_tree(tree[1],ctx=ctx)
         # ('mathfunc', funcname, arg)
         elif op=='mathfunc':
-            return self.mathfuncs[tree[1]](self.eval_tree(tree[2],ctx=ctx))
+            func, val = tree[1], self.eval_tree(tree[2],ctx=ctx)
+            try:
+                return self.mathfuncs[func](val)
+            except:
+                print(f"Function {func} domain error (used val = {val}).")
+                return 0
         # ('binop', op, arg1, arg2)
         elif op=='binop':
-            return self.binops[tree[1]](self.eval_tree(tree[2],ctx=ctx), self.eval_tree(tree[3],ctx=ctx))
+            try:
+                return self.binops[tree[1]](self.eval_tree(tree[2],ctx=ctx), self.eval_tree(tree[3],ctx=ctx))
+            except:
+                print("Error: division by zero.")
+                return 0
         # ('lambda', prev_exp, exp)
         elif op=='lambda':
             return self.eval_tree(tree[2], ctx = {'x': self.eval_tree(tree[1],ctx=ctx)})
@@ -144,7 +154,8 @@ class GeckoParser(Parser):
     @_('expr')
     def statement(self, p):
         # print(p.expr) # cheap debug xd
-        print(f"Result: {self.pprint_int(self.eval_tree(('tree',p.expr)))}")
+        if p.expr[0]=='assign': pass
+        else: print(f"{self.pprint_int(self.eval_tree(('tree',p.expr)))}")
 
     @_('CALC ID')
     def statement(self, p):
@@ -197,7 +208,7 @@ class GeckoParser(Parser):
         self.printed_ids = []
         self.ids[p.ID] = [p.expr, self.eval_tree(p.expr)]
         self.pprint_final(p.ID, self.ids[p.ID][1])
-        return p.expr
+        return ('assign',p.expr)
 
     @_('expr THEN TICK ID expr TICK')
     def expr(self, p):
