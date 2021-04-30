@@ -61,7 +61,7 @@ class GeckoParser(Parser):
     # Print final in cyan n stuff
     def pprint_final(self, _id, val):
         print(f"{colored('Final ','cyan')} {_id} = {self.pprint_int(val)}")
-    # Print using in ???
+    # Print using in magenta
     def pprint_using(self, _id, val):
         print(f"{colored('using ','magenta')} {_id} = {self.pprint_int(val)}")
 
@@ -78,8 +78,11 @@ class GeckoParser(Parser):
         # ('id-lookup', id)
         elif op=='id-lookup':
             try:
-                # Si hay ctx son variables de scope
-                # ej: 5+4 then x'rt(x)' -> la x guarda el valor de 5+4
+                # scope variables in 'ctx'
+                # ex: 5+4 then 'a rt(a)' -> a stores 5+4
+                # ex: 5+4 then rt(x) -> x stores 5+4
+                # By default, x is the lambda variable.
+                # 'ID expr' defines another one if x is a global variable
                 if ctx and tree[1] in ctx.keys():
                     val = ctx[tree[1]]
                 else:
@@ -198,7 +201,7 @@ class GeckoParser(Parser):
 
     @_('expr THEN TICK ID expr TICK')
     def expr(self, p):
-        # I want to actually use x as my var
+        # I want to actually use x as a global var
         return ('lambda-x',p.ID,p.expr0,p.expr1)
 
     @_('expr THEN expr')
@@ -209,6 +212,7 @@ class GeckoParser(Parser):
 
 g = lambda x: colored(x, 'green')
 def REPL():
+    # Credits to ANDREAS FREISE (whoever you are) for the ASCII gecko
     gecko ="\n"+\
 g(r"                       )/_         ")+"""|\n"""+\
 g(r'             _.--..---"-,--c_      ')+"""|   Gecko REPL\n"""+\
