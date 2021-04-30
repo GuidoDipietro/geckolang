@@ -1,19 +1,21 @@
 from math import sin, cos, tan, asin, acos, atan, degrees, radians, sqrt
+from pprint import pprint
 from sly import Parser
 from glexer import GeckoLexer
 from colorama import init
 from termcolor import colored
 
 class GeckoParser(Parser):
-    debugfile = 'parser.out'
+    # debugfile = 'parser.out'
 
     tokens = GeckoLexer.tokens
 
     precedence = (
+        ('right', ASSIGN),
         ('left', THEN),
         ('left', PLUS, MINUS),
         ('left', TIMES, DIV),
-        ('right', UMINUS, MATHFUNC),
+        ('right', MATHFUNC, UMINUS, CONSTANT),
         ('right', POW)
     )
 
@@ -59,41 +61,57 @@ class GeckoParser(Parser):
     # Print final in cyan n stuff
     def pprint_final(self, _id, val):
         print(f"{colored('Final ','cyan')} {_id} = {self.pprint_int(val)}")
-
+    # Print using in ???
+    def pprint_using(self, _id, val):
+        print(f"{colored('using ','magenta')} {_id} = {self.pprint_int(val)}")
 
     # Evaluate AST
-    def eval_tree(self, tree, prev=None):
+    def eval_tree(self, tree, ctx=None):
+        # print(f"Printed ids: {self.printed_ids}")
         op = tree[0]
         # ('tree', root)
         if op=='tree':
-            return self.eval_tree(tree[1],prev=prev)
+            return self.eval_tree(tree[1],ctx=ctx)
         # ('number', float)
         elif op=='number':
             return tree[1]
         # ('id-lookup', id)
         elif op=='id-lookup':
             try:
-                val = (prev if prev else self.ids[tree[1]][1])
+                # Si hay ctx son variables de scope
+                # ej: 5+4 then x'rt(x)' -> la x guarda el valor de 5+4
+                if ctx and tree[1] in ctx.keys():
+                    val = ctx[tree[1]]
+                else:
+                    val = self.ids[tree[1]][1]
 
-                if (prev is None and not tree[1] in self.printed_ids):
-                    print(f"{tree[1]} = {self.pprint_int(val)}")
-                    self.printed_ids += [tree[1]]
+                if (ctx is None or len(ctx)==0):
+                    if not tree[1] in self.printed_ids:
+                        self.pprint_using(tree[1], val)
+                        self.printed_ids += [tree[1]]
+                else:
+                    if tree[1] not in ctx.keys() and not tree[1] in self.printed_ids:
+                        self.pprint_using(tree[1], val)
+                        self.printed_ids += [tree[1]]
                 return val
             except:
-                print(f"Invalid ID {tree[1]}.")
+                print(f"Invalid ID {tree[1]}. Computed as 0.")
                 return 0
         # ('group',expr)
         elif op=='group':
-            return self.eval_tree(tree[1],prev=prev)
+            return self.eval_tree(tree[1],ctx=ctx)
         # ('mathfunc', funcname, arg)
         elif op=='mathfunc':
-            return self.mathfuncs[tree[1]](self.eval_tree(tree[2],prev=prev))
+            return self.mathfuncs[tree[1]](self.eval_tree(tree[2],ctx=ctx))
         # ('binop', op, arg1, arg2)
         elif op=='binop':
-            return self.binops[tree[1]](self.eval_tree(tree[2],prev=prev), self.eval_tree(tree[3],prev=prev))
+            return self.binops[tree[1]](self.eval_tree(tree[2],ctx=ctx), self.eval_tree(tree[3],ctx=ctx))
         # ('lambda', prev_exp, exp)
         elif op=='lambda':
-            return self.eval_tree(tree[2], self.eval_tree(tree[1],prev=prev))
+            return self.eval_tree(tree[2], ctx = {'x': self.eval_tree(tree[1],ctx=ctx)})
+        # ('lambda-x', temp_var, prev_exp, exp)
+        elif op=='lambda-x':
+            return self.eval_tree(tree[3], ctx = {tree[1]: self.eval_tree(tree[2],ctx=ctx)})
         else:
             print("Error.")
             return None
@@ -107,9 +125,12 @@ class GeckoParser(Parser):
     @_('statements NEWLINE statement')
     def statements(self, p):
         pass
-    @_('statement')
+    @_('statements SEMI statement')
     def statements(self, p):
         pass
+    @_('statement')
+    def statements(self, p):
+        self.printed_ids = []
 
     ### STATEMENT ###
 
@@ -119,22 +140,20 @@ class GeckoParser(Parser):
 
     @_('expr')
     def statement(self, p):
-        self.printed_ids = []
-        # print(p.expr)
+        # print(p.expr) # cheap debug xd
         print(f"Result: {self.pprint_int(self.eval_tree(('tree',p.expr)))}")
-
-    @_('ID ASSIGN expr')
-    def statement(self, p):
-        self.printed_ids = []
-        self.ids[p.ID] = [p.expr, self.eval_tree(p.expr)]
-        self.pprint_final(p.ID, self.ids[p.ID][1])
 
     @_('CALC ID')
     def statement(self, p):
-        self.printed_ids = []
         tree = self.ids[p.ID][0]
         self.ids[p.ID][1] = self.eval_tree(tree)
         self.pprint_final(p.ID, self.ids[p.ID][1])
+
+    @_('VARS')
+    def statement(self, p):
+        print(colored('Vars:','white',attrs=['bold']))
+        for var in self.ids.keys():
+            print(f"{var} = {self.pprint_int(self.ids[var][1])}")
 
     ### EXPR ###
 
@@ -149,6 +168,10 @@ class GeckoParser(Parser):
     @_('MINUS expr %prec UMINUS')
     def expr(self, p):
         return ('binop','-',('number',0),p.expr)
+
+    @_('NUMBER ID %prec CONSTANT')
+    def expr(self, p):
+        return ('binop','*',('number',float(p.NUMBER)),('id-lookup',p.ID))
 
     @_('MATHFUNC expr')
     def expr(self, p):
@@ -166,15 +189,36 @@ class GeckoParser(Parser):
     def expr(self, p):
         return ('id-lookup',p.ID)
 
+    @_('ID ASSIGN expr')
+    def expr(self, p):
+        self.printed_ids = []
+        self.ids[p.ID] = [p.expr, self.eval_tree(p.expr)]
+        self.pprint_final(p.ID, self.ids[p.ID][1])
+        return p.expr
+
+    @_('expr THEN TICK ID expr TICK')
+    def expr(self, p):
+        # I want to actually use x as my var
+        return ('lambda-x',p.ID,p.expr0,p.expr1)
+
     @_('expr THEN expr')
     def expr(self, p):
         return ('lambda',p.expr0,p.expr1)
 
-if __name__ == '__main__':
+# Utils for INIT #
 
-    init() # Colorama stuff
-    lexer = GeckoLexer()
-    parser = GeckoParser()
+g = lambda x: colored(x, 'green')
+def REPL():
+    gecko ="\n"+\
+g(r"                       )/_         ")+"""|\n"""+\
+g(r'             _.--..---"-,--c_      ')+"""|   Gecko REPL\n"""+\
+g(r"        \L..'           ._O__)_    ")+"""|\n"""+\
+g(r",-.     _.+  _  \..--( /           ")+"""|   Version 0.0.1 (2021-04)\n"""+\
+g(r"  `\.-''__.-' \ (     \_           ")+"""|\n"""+\
+g(r"    `'''       `\__   /\           ")+"""|   Made by Guido Dipietro\n"""+\
+g(r"                ')                 ")+"""|\n"""
+
+    print(gecko)
 
     while True:
         try:
@@ -184,3 +228,15 @@ if __name__ == '__main__':
             break
         if text:
             parser.parse(lexer.tokenize(text))
+
+##########################
+########## MAIN ##########
+##########################
+
+if __name__ == '__main__':
+
+    init() # Colorama stuff
+    lexer = GeckoLexer()
+    parser = GeckoParser()
+
+    REPL()
