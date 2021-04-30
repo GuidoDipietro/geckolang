@@ -29,7 +29,7 @@ class GeckoLexer(Lexer):
     ID['gg']    = EXIT
     ID['vars']  = VARS
 
-    NUMBER      = r'[0-9]+(\.[0-9]*)?'
+    NUMBER      = r'([0-9]*[.])?[0-9]+(e\-?[0-9]+)?'
 
     PLUS        = r'\+'
     MINUS       = r'-'

@@ -1,4 +1,4 @@
-from math import sin, cos, tan, asin, acos, atan, degrees, radians, sqrt
+from math import sin, cos, tan, asin, acos, atan, degrees, radians, sqrt, log
 from pprint import pprint
 from sly import Parser
 from glexer import GeckoLexer
@@ -32,8 +32,8 @@ class GeckoParser(Parser):
         "asind": lambda x: degrees(asin(x)),
         "acosd": lambda x: degrees(acos(x)),
         "atand": lambda x: degrees(atan(x)),
-        "rt": lambda x: sqrt(x),
-        "ln": lambda x: log(x)
+        "rt": sqrt,
+        "ln": log,
     }
 
     binops = {
