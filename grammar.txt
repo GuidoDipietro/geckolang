@@ -9,6 +9,7 @@ statement	:			expr
 			|			CALC ID
 			|			EXIT
 			|			VARS
+			|			NEW
 
 expr		:			expr + expr
 			|			expr - expr

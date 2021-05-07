@@ -18,6 +18,8 @@ An interactive REPL devised for quickly getting calculations done.
 
 <!-- One-line function definitions -->
 
+<!-- ans -->
+
 ## Motivation
 
 As an engineering student, I've faced the task of repeating similar or identical calculations for problem solving way too often. Or just, a random piece of math I wanted to quickly solve and carry on doing something else.  

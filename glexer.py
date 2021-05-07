@@ -5,7 +5,7 @@ class GeckoLexer(Lexer):
                 DIV, POW, MATHFUNC, NUMBER,
                 LPAREN, RPAREN, ASSIGN, THEN,
                 CALC, EXIT, NEWLINE, TICK,
-                SEMI, VARS }
+                SEMI, VARS, NEW }
 
     ignore = ' \t'
 
@@ -28,6 +28,7 @@ class GeckoLexer(Lexer):
     ID['calc']  = CALC
     ID['gg']    = EXIT
     ID['vars']  = VARS
+    ID['new']   = NEW
 
     NUMBER      = r'([0-9]*[.])?[0-9]+(e\-?[0-9]+)?'
 

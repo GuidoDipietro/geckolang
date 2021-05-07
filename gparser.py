@@ -1,4 +1,4 @@
-from math import sin, cos, tan, asin, acos, atan, degrees, radians, sqrt, log
+import math
 from pprint import pprint
 from sly import Parser
 from glexer import GeckoLexer
@@ -20,20 +20,20 @@ class GeckoParser(Parser):
     )
 
     mathfuncs = {
-        "sin": sin,
-        "cos": cos,
-        "tan": tan,
-        "asin": asin,
-        "acos": acos,
-        "atan": atan,
+        "sin": math.sin,
+        "cos": math.cos,
+        "tan": math.tan,
+        "asin": math.asin,
+        "acos": math.acos,
+        "atan": math.atan,
         "sind": lambda x: sin(radians(x)),
         "cosd": lambda x: cos(radians(x)),
         "tand": lambda x: tan(radians(x)),
         "asind": lambda x: degrees(asin(x)),
         "acosd": lambda x: degrees(acos(x)),
         "atand": lambda x: degrees(atan(x)),
-        "rt": sqrt,
-        "ln": log,
+        "rt": math.sqrt,
+        "ln": math.log,
     }
 
     binops = {
@@ -45,29 +45,34 @@ class GeckoParser(Parser):
     }
 
     def __init__(self):
-        self.ids = {}
+        self.ids = {
+            "pi": [('number',math.pi),math.pi],
+            "e": [('number',math.e),math.e],
+            "tau": [('number',math.tau),math.tau]
+        }
+        self.mathconsts = ["pi","e","tau"]
         self.printed_ids = []
+        self.ans = 0
 
     ## utils ##
 
     # Print number in scientific notation if you shall
-    def bigint(self, val):
-        if len(str(val))>6:
+    def sciint(self, val):
+        if int(val)>999999 or int(val)<-999999 or 'e' in str(val):
             return f'{val:.2e}'
-        return val
+        return round(val,3)
     # Round dem floats
     def pprint_int(self, val):
-        return self.bigint(int(val) if val%1==0 else round(val,3))
+        return self.sciint(int(val) if val%1==0 else val)
     # Print final in cyan n stuff
     def pprint_final(self, _id, val):
-        print(f"{colored('Final ','cyan')} {_id} = {self.pprint_int(val)}")
+        print(f"{colored('Final ','cyan',attrs=['bold'])} {_id} = {self.pprint_int(val)}")
     # Print using in magenta
     def pprint_using(self, _id, val):
         print(f"{colored('using ','magenta')} {_id} = {self.pprint_int(val)}")
 
     # Evaluate AST
     def eval_tree(self, tree, ctx=None):
-        # print(f"Printed ids: {self.printed_ids}")
         op = tree[0]
         # ('tree', root)
         # ('assign', thing)
@@ -78,6 +83,9 @@ class GeckoParser(Parser):
             return tree[1]
         # ('id-lookup', id)
         elif op=='id-lookup':
+            if (tree[1]=='ans'):
+                print(colored('ans','cyan') + f" = {self.ans}")
+                return self.ans
             try:
                 # scope variables in 'ctx'
                 # ex: 5+4 then 'a rt(a)' -> a stores 5+4
@@ -99,7 +107,7 @@ class GeckoParser(Parser):
                         self.printed_ids += [tree[1]]
                 return val
             except:
-                print(f"Invalid ID {tree[1]}.")
+                print(f"{colored('Invalid ID','red')} {tree[1]}")
                 return 0
         # ('group',expr)
         elif op=='group':
@@ -110,14 +118,14 @@ class GeckoParser(Parser):
             try:
                 return self.mathfuncs[func](val)
             except:
-                print(f"Function {func} domain error (used val = {val}).")
+                print(f"Function {func} domain error (used val = {val})")
                 return 0
         # ('binop', op, arg1, arg2)
         elif op=='binop':
             try:
                 return self.binops[tree[1]](self.eval_tree(tree[2],ctx=ctx), self.eval_tree(tree[3],ctx=ctx))
             except:
-                print("Error: division by zero.")
+                print("Error: division by zero")
                 return 0
         # ('lambda', prev_exp, exp)
         elif op=='lambda':
@@ -154,8 +162,10 @@ class GeckoParser(Parser):
     @_('expr')
     def statement(self, p):
         # print(p.expr) # cheap debug xd
-        if p.expr[0]=='assign': pass
-        else: print(f"{self.pprint_int(self.eval_tree(('tree',p.expr)))}")
+        if p.expr[0] in ['assign','nop']: pass
+        else:
+            self.ans = self.eval_tree(('tree',p.expr))
+            print(f"{self.pprint_int(self.ans)}")
 
     @_('CALC ID')
     def statement(self, p):
@@ -165,9 +175,20 @@ class GeckoParser(Parser):
 
     @_('VARS')
     def statement(self, p):
-        print(colored('Vars:','white',attrs=['bold']))
-        for var in self.ids.keys():
-            print(f"{var} = {self.pprint_int(self.ids[var][1])}")
+        if (len(self.ids)>0) and not (len(self.mathconsts)==len(self.ids)):
+            print(colored('Vars:','white',attrs=['bold']))
+            # Longest ID + escape sequences for color + 1
+            padding = len(max(self.ids.keys(), key=len))+8+1
+            for var in self.ids.keys():
+                if var not in self.mathconsts:
+                    print(f"{colored(var,'red'):{padding}} = {self.pprint_int(self.ids[var][1])}")
+        else:
+            print(colored('No initialized variables','white',attrs=['bold']))
+
+    # Deletes all variables
+    @_('NEW')
+    def statement(self, p):
+        self.__init__()
 
     ### EXPR ###
 
@@ -205,6 +226,11 @@ class GeckoParser(Parser):
 
     @_('ID ASSIGN expr')
     def expr(self, p):
+        if (p.ID=='ans'):
+            print(colored('Invalid ID','red')+" ans")
+            return ('assign',self.ans)
+        if (p.ID in self.mathconsts):
+            self.mathconsts.remove(p.ID)
         self.printed_ids = []
         self.ids[p.ID] = [p.expr, self.eval_tree(p.expr)]
         self.pprint_final(p.ID, self.ids[p.ID][1])
