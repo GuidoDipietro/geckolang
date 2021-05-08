@@ -10,6 +10,7 @@ statement	:			expr
 			|			EXIT
 			|			VARS
 			|			NEW
+			|			POLAR expr
 
 expr		:			expr + expr
 			|			expr - expr
@@ -21,6 +22,7 @@ expr		:			expr + expr
 			|			NUMBER ID
 			|			( expr )
 			|			NUMBER
+			|			IMNUMBER
 			|			ID
 			|			ID ASSIGN expr
 			|			expr THEN expr

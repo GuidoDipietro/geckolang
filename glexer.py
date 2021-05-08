@@ -3,7 +3,7 @@ from sly import Lexer
 class GeckoLexer(Lexer):
     tokens = {  ID, PLUS, MINUS, TIMES,
                 DIV, POW, MATHFUNC, NUMBER,
-                LPAREN, RPAREN, ASSIGN, THEN,
+                LPAREN, RPAREN, ASSIGN, THEN, POLAR,
                 CALC, EXIT, NEWLINE, TICK,
                 SEMI, VARS, NEW }
 
@@ -24,6 +24,9 @@ class GeckoLexer(Lexer):
     ID['atand'] = MATHFUNC
     ID['rt']    = MATHFUNC
     ID['ln']    = MATHFUNC
+    ID['angle'] = MATHFUNC
+    ID['abs']   = MATHFUNC
+    ID['polar'] = POLAR
     ID['then']  = THEN
     ID['calc']  = CALC
     ID['gg']    = EXIT
