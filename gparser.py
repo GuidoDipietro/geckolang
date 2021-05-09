@@ -64,7 +64,8 @@ class GeckoParser(Parser):
 
     # Print number in scientific notation if you shall
     def scinum(self, val):
-        if int(val)>999999 or int(val)<-999999 or 'e' in str(val):
+        if val==0: return 0
+        if int(val)>999999 or int(val)<-999999 or abs(val)<0.001 or 'e' in str(val):
             return f'{val:.2e}'
         return round(val,3)
     # Round dem floats
