@@ -17,13 +17,27 @@ expr		:			expr + expr
 			|			expr * expr
 			|			expr / expr
 			|			expr ^ expr
-			|			- expr
-			|			MATHFUNC expr
-			|			NUMBER ID
-			|			( expr )
+			|			- expr						%prec UMINUS
+			|			mini_term
 			|			NUMBER
-			|			IMNUMBER
-			|			ID
 			|			ID ASSIGN expr
 			|			expr THEN expr
 			|			expr THEN ' ID expr '
+
+mini_term	:			ID
+			|			NUMBER mini_term			%prec CONSTANT
+			|			NUMBER mini_term POW expr
+			|			MATHFUNC expr
+			|			LPAREN expr RPAREN
+
+------
+
+precedence = (
+    ('right', ASSIGN),
+    ('left', THEN),
+    ('left', PLUS, MINUS),
+    ('left', TIMES, DIV),
+    ('right', CONSTANT),
+    ('right', MATHFUNC, UMINUS),
+    ('right', POW),
+)

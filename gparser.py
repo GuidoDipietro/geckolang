@@ -16,8 +16,9 @@ class GeckoParser(Parser):
         ('left', THEN),
         ('left', PLUS, MINUS),
         ('left', TIMES, DIV),
-        ('right', MATHFUNC, UMINUS, CONSTANT),
-        ('right', POW)
+        ('right', CONSTANT),
+        ('right', MATHFUNC, UMINUS),
+        ('right', POW),
     )
 
     mathfuncs = {
@@ -226,27 +227,13 @@ class GeckoParser(Parser):
     def expr(self, p):
         return ('binop','-',('number',0),p.expr)
 
-    @_('NUMBER ID %prec CONSTANT')
-    def expr(self, p):
-        if p.ID=='j':
-            return ('number',complex(p.NUMBER+"j"))
-        return ('binop','*',('number',float(p.NUMBER)),('id-lookup',p.ID))
-
-    @_('MATHFUNC expr')
-    def expr(self, p):
-        return ('mathfunc',p.MATHFUNC,p.expr)
-
-    @_('LPAREN expr RPAREN')
-    def expr(self, p):
-        return ('group',p.expr)
-
     @_('NUMBER')
     def expr(self, p):
         return ('number',float(p.NUMBER))
 
-    @_('ID')
+    @_('mini_term')
     def expr(self, p):
-        return ('id-lookup',p.ID)
+        return p.mini_term
 
     @_('ID ASSIGN expr')
     def expr(self, p):
@@ -268,6 +255,32 @@ class GeckoParser(Parser):
     @_('expr THEN expr')
     def expr(self, p):
         return ('lambda',p.expr0,p.expr1)
+
+    ### mini_term (terms for 4x, 4x^2 type of stuff)
+    # literally i dont understand how this dumb fix actually worked
+    # im so scared
+
+    @_('ID')
+    def mini_term(self, p):
+        return ('id-lookup',p.ID)
+
+    @_('NUMBER mini_term %prec CONSTANT')
+    def mini_term(self, p):
+        if p.mini_term[1]=='j':
+            return ('number',complex(p.NUMBER+'j'))
+        return ('binop','*',('number',float(p.NUMBER)),p.mini_term)
+
+    @_('NUMBER mini_term POW expr')
+    def mini_term(self, p):
+        return ('binop','*',('number',float(p.NUMBER)),('binop','^',p.mini_term,p.expr))
+
+    @_('MATHFUNC expr')
+    def mini_term(self, p):
+        return ('mathfunc',p.MATHFUNC,p.expr)
+
+    @_('LPAREN expr RPAREN')
+    def mini_term(self, p):
+        return ('group',p.expr)
 
 # Utils for INIT #
 
