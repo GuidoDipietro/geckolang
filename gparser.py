@@ -271,6 +271,10 @@ class GeckoParser(Parser):
             return ('number',complex(p.NUMBER+'j'))
         return ('binop','*',('number',float(p.NUMBER)),p.mini_term)
 
+    @_('LPAREN expr RPAREN mini_term %prec CONSTANT')
+    def mini_term(self, p):
+        return ('binop','*',p.expr,p.mini_term)
+
     @_('NUMBER mini_term POW expr')
     def mini_term(self, p):
         return ('binop','*',('number',float(p.NUMBER)),('binop','^',p.mini_term,p.expr))
