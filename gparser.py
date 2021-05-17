@@ -5,7 +5,7 @@ from pprint import pprint
 from sly import Parser
 from glexer import GeckoLexer
 from colorama import init
-from termcolor import colored, cprint
+from termcolor import colored
 from settings import *
 
 class GeckoParser(Parser):
