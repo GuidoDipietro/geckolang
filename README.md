@@ -7,18 +7,28 @@ An interactive REPL devised for quickly getting calculations done.
 ## Features
 
 <!-- Clean expr syntax -->
+![Clean Syntax example 1](img/clean_syntax_1.PNG)
 
 <!-- Straightforward piping for verbose expressions -->
+![Piping example 1](img/piping_1.PNG)
+![Piping example 2](img/piping_2.PNG)
+![Piping example 3](img/piping_3.PNG)
 
 <!-- Built-in math functions -->
+![Builtin math example 1](img/builtin_math_1.PNG)
 
 <!-- Complex numbers -->
+![Complex numbers example 1](img/complex_1.PNG)
 
 <!-- ans -->
+![Ans example 1](img/ans_1.PNG)
 
 <!-- Calc command -->
+![Calc example 1](img/calc_1.PNG)
+![Calc example 2](img/calc_2.PNG)
 
 <!-- Var dump -->
+![Var dump example 1](img/vars_1.PNG)
 
 <!-- One-line function definitions TODO -->
 

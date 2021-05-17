@@ -1,3 +1,4 @@
+# import readline # linux stuff. Will fix later
 import math
 from numpy import angle
 from pprint import pprint
@@ -206,7 +207,7 @@ class GeckoParser(Parser):
             padding = len(max(self.ids.keys(), key=len))+8+1
             for var in sorted(self.ids.keys()):
                 if var not in self.mathconsts:
-                    print(f"{tab}{colored(var,VAR_COLOR):{padding}} = {self.pprint_num(self.ids[var][1])}")
+                    print(f"{tab*2}{colored(var,VAR_COLOR):{padding}} = {self.pprint_num(self.ids[var][1])}")
         else:
             print(tab + colored('No initialized variables','white',attrs=['bold']))
 
