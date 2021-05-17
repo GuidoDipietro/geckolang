@@ -1,17 +1,22 @@
 root		:			statements
 			|
 
-statements	:			statements statement
+statements	:			statements \n statement
 			|			statements , statement
 			|			statement
 
-statement	:			expr
-			|			CALC ID
+statement	:			EXIT
+			|			expr
 			|			ids_assign expr
-			|			EXIT
+			|			func_shape ASSIGN expr
+			|			CALC ID
+			|			POLAR expr
+			|			expr POLAR
 			|			VARS
 			|			NEW
-			|			POLAR expr
+
+func_shape	:			ID LPAREN exprs expr RPAREN
+			|			ID LPAREN expr RPAREN
 
 ids_assign	:			ID ASSIGN
 			|			ids_assign ID ASSIGN
@@ -22,11 +27,14 @@ expr		:			expr + expr
 			|			expr / expr
 			|			expr ^ expr
 			|			- expr							%prec UMINUS
-			|			mini_term
 			|			NUMBER
+			|			mini_term
 			|			expr THEN expr
 			|			expr THEN ' ID expr '
 			|			expr WITH with_assigns
+
+exprs		:			expr COMMA
+			|			exprs expr COMMA
 
 with_assigns:			ID ASSIGN expr SEMI
 			|			with_assigns ID ASSIGN expr SEMI
@@ -36,6 +44,7 @@ mini_term	:			ID
 			|			LPAREN expr RPAREN mini_term 	%prec CONSTANT
 			|			NUMBER mini_term POW expr
 			|			MATHFUNC LPAREN expr RPAREN
+			|			func_shape
 			|			LPAREN expr RPAREN
 
 ------

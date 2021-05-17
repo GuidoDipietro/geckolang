@@ -5,7 +5,7 @@ from pprint import pprint
 from sly import Parser
 from glexer import GeckoLexer
 from colorama import init
-from termcolor import colored
+from termcolor import colored, cprint
 from settings import *
 
 class GeckoParser(Parser):
@@ -58,6 +58,7 @@ class GeckoParser(Parser):
             "e": [('number',math.e),math.e],
             "tau": [('number',math.tau),math.tau]
         }
+        self.funcs = {}
         self.mathconsts = ["pi","e","tau"]
         self.printed_ids = []
         self.ans = 0
@@ -120,7 +121,7 @@ class GeckoParser(Parser):
                         self.printed_ids += [tree[1]]
                 return val
             except:
-                print(f"{tab}{colored('Invalid ID',INVALID_ID_COLOR)} {tree[1]}")
+                print(f"{tab}{colored('Invalid ID',INVALID_COLOR)} {tree[1]}")
                 return 0
         # ('group',expr)
         elif op=='group':
@@ -149,9 +150,22 @@ class GeckoParser(Parser):
         # ('with-expr', expr, immediate_context)
         elif op=='with-expr':
             return self.eval_tree(tree[1], ctx = tree[2])
+        # ('func-call', ID, [exprs]), self.funcs = { 'hypot': (['x','y'], expr) }
+        elif op=='func-call':
+            func_args, func_expr = self.funcs[tree[1]]
+            # Wrong call, too many/few args
+            if len(func_args) != len(tree[2]):
+                print(tab + colored('Wrong function call, for',INVALID_COLOR))
+                print(2*tab + colored(f'{tree[1]}({",".join(func_args)})',FUNC_ERR_COLOR))
+                return 0
+            # Actual work done here
+            func_ctx = {}
+            for _id,expr in zip(func_args, tree[2]):
+                func_ctx[_id] = self.eval_tree(expr, ctx=ctx)
+            return self.eval_tree(func_expr, ctx = func_ctx)
         else:
             print(f"{tab}Error.")
-            return None
+            return 0
 
     ####### Grammar #######
 
@@ -169,6 +183,46 @@ class GeckoParser(Parser):
     def statements(self, p):
         self.printed_ids = []
 
+    ### Structural rules stuff (kinda in-between non-terminals for other non-terminals)
+
+    ## Functions stuff ## for definitions and calls
+        # FUNC_NAME ( ARGS ) -> just that
+        # args are 'exprs' because this is used both for
+        # function definitions and for function calls
+    @_('ID LPAREN exprs expr RPAREN')
+    def func_shape(self, p):
+        return p.ID, [*p.exprs, p.expr]
+    @_('ID LPAREN expr RPAREN')
+    def func_shape(self, p):
+        return p.ID, [p.expr]
+    @_('expr COMMA')
+    def exprs(self, p):
+        return [p.expr]
+    @_('exprs expr COMMA')
+    def exprs(self, p):
+        return [*p.exprs, p.expr]
+
+    ## ID assignment (left hand of assignments: id=, id=id=id=, etc)
+    @_('ID ASSIGN')
+    def ids_assign(self, p):
+        return [p.ID]
+    @_('ids_assign ID ASSIGN')
+    def ids_assign(self, p):
+        if p.ID not in p.ids_assign:
+            return [*p.ids_assign, p.ID]
+        return p.ids_assign
+
+    ## WITH expression assignment (different from ID assignment sentence)
+        # These assignments are temporal and are not stored, end in a
+        # semicolon and are only to be used within WITH expressions
+    @_('ids_assign expr SEMI')
+    def with_assigns(self, p):
+        return {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
+    @_('with_assigns ids_assign expr SEMI')
+    def with_assigns(self, p):
+        new_dict = {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
+        return {**p.with_assigns, **new_dict}
+
     ### STATEMENT ###
 
     @_('EXIT')
@@ -183,11 +237,12 @@ class GeckoParser(Parser):
             self.ans = self.eval_tree(('tree',p.expr))
             print(f"{tab}{self.pprint_num(self.ans)}")
 
+    # ben=14, a=b=c=3, no return value, this isnt an expression!
     @_('ids_assign expr')
     def statement(self, p):
         for _id in p.ids_assign:
             if (_id=='ans'):
-                print(tab + colored('Invalid ID',INVALID_ID_COLOR)+" ans")
+                print(tab + colored('Invalid ID',INVALID_COLOR)+" ans")
                 return ('assign',self.ans)
             if (_id in self.mathconsts):
                 self.mathconsts.remove(_id)
@@ -195,14 +250,20 @@ class GeckoParser(Parser):
             self.ids[_id] = [p.expr, self.eval_tree(p.expr)]
             self.pprint_final(_id, self.ids[_id][1])
 
-    @_('ID ASSIGN')
-    def ids_assign(self, p):
-        return [p.ID]
-    @_('ids_assign ID ASSIGN')
-    def ids_assign(self, p):
-        if p.ID not in p.ids_assign:
-            return [*p.ids_assign, p.ID]
-        return p.ids_assign
+    # Function declaration/definition
+    @_('func_shape ASSIGN expr')
+    def statement(self, p):
+        # Couldn't find another solution, since IDs are expressions...
+        # Conflicts with function calls otherwise
+        name, args = p.func_shape
+        for arg in args:
+            if arg[0]!='id-lookup': # f(a,14) = a+2
+                print(tab + colored('Invalid arguments',INVALID_COLOR))
+                return
+        if len(set(args)) != len(args): # f(a,a)=2
+            print(tab + colored('Invalid arguments',INVALID_COLOR))
+        else:
+            self.funcs[name] = ([x[1] for x in args], p.expr)
 
     @_('CALC ID')
     def statement(self, p):
@@ -240,6 +301,7 @@ class GeckoParser(Parser):
         self.__init__()
 
     ### EXPR ###
+    # Everything that can be evaluated. Upon any error evaluates to 0.
 
     @_( 'expr PLUS expr',
         'expr MINUS expr',
@@ -261,31 +323,26 @@ class GeckoParser(Parser):
     def expr(self, p):
         return p.mini_term
 
-    @_('expr THEN TICK ID expr TICK')
-    def expr(self, p):
-        # I want to actually use x as a global var
-        return ('lambda-x',p.ID,p.expr0,p.expr1)
-
     @_('expr THEN expr')
     def expr(self, p):
         return ('lambda',p.expr0,p.expr1)
 
-    # expr WITH stuff (5+15a*b^2 with a=sin(4)^2; b=2pi;)
+    @_('expr THEN TICK ID expr TICK')
+    def expr(self, p):
+        # Here I want to actually use x as a global var
+        # x=10, var = rt(4) then 's s+x' -> var = 12
+        return ('lambda-x',p.ID,p.expr0,p.expr1)
 
+    # expr WITH stuff (5+15a*b^2 with a=sin(4)^2; b=2pi;)
     @_('expr WITH with_assigns')
     def expr(self, p):
         return ('with-expr', p.expr, p.with_assigns)
 
-    @_('ids_assign expr SEMI')
-    def with_assigns(self, p):
-        return {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
-    @_('with_assigns ids_assign expr SEMI')
-    def with_assigns(self, p):
-        new_dict = {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
-        return {**p.with_assigns, **new_dict}
+    ### mini_term
+    # not a boolean miniterm. This is my own mini_term.
+    # These allow constant pre-pending as implicit multiplication (4x^2, 5sin(2))
 
-    ### mini_term (terms for 4x, 4x^2 type of stuff)
-    # literally i dont understand how this dumb fix actually worked
+    # literally i dont understand how this dumb solution actually worked out
     # im so scared
 
     @_('ID')
@@ -310,9 +367,16 @@ class GeckoParser(Parser):
     def mini_term(self, p):
         return ('mathfunc',p.MATHFUNC,p.expr)
 
+    @_('func_shape')
+    def mini_term(self, p):
+        name, args = p.func_shape
+        return ('func-call', name, args)
+
     @_('LPAREN expr RPAREN')
     def mini_term(self, p):
         return ('group',p.expr)
+
+########## END OF PARSER CLASS ##########
 
 # Utils for INIT #
 
