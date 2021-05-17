@@ -17,7 +17,7 @@ expr		:			expr + expr
 			|			expr * expr
 			|			expr / expr
 			|			expr ^ expr
-			|			- expr						%prec UMINUS
+			|			- expr							%prec UMINUS
 			|			mini_term
 			|			NUMBER
 			|			ID ASSIGN expr
@@ -25,9 +25,10 @@ expr		:			expr + expr
 			|			expr THEN ' ID expr '
 
 mini_term	:			ID
-			|			NUMBER mini_term			%prec CONSTANT
+			|			NUMBER mini_term				%prec CONSTANT
+			|			LPAREN expr RPAREN mini_term 	%prec CONSTANT
 			|			NUMBER mini_term POW expr
-			|			MATHFUNC expr
+			|			MATHFUNC LPAREN expr RPAREN
 			|			LPAREN expr RPAREN
 
 ------

@@ -12,6 +12,8 @@ An interactive REPL devised for quickly getting calculations done.
 
 <!-- Built-in math functions -->
 
+<!-- Complex numbers -->
+
 <!-- ans -->
 
 <!-- Calc command -->

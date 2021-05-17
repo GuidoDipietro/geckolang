@@ -5,6 +5,7 @@ from sly import Parser
 from glexer import GeckoLexer
 from colorama import init
 from termcolor import colored
+from settings import *
 
 class GeckoParser(Parser):
     # debugfile = 'parser.out'
@@ -67,21 +68,21 @@ class GeckoParser(Parser):
         if val==0: return 0
         if int(val)>999999 or int(val)<-999999 or abs(val)<0.001 or 'e' in str(val):
             return f'{val:.2e}'
-        return round(val,3)
+        return round(val,4)
     # Round dem floats
     def pprint_num(self, val):
         if 'j' in str(val):
             if val.imag != 0:
                 sign = '+' if val.imag>0 else '-'
-                return f"{self.pprint_num(val.real)} {sign} {self.pprint_num(abs(val.imag))}j"
+                return f"{tab}{self.pprint_num(val.real)} {sign} {self.pprint_num(abs(val.imag))}j"
             val = val.real
         return self.scinum(int(val) if val%1==0 else val)
     # Print final in cyan n stuff
     def pprint_final(self, _id, val):
-        print(f"{colored('Final ','cyan',attrs=['bold'])} {_id} = {self.pprint_num(val)}")
+        print(f"{tab}{colored('Final',FINAL_COLOR,attrs=['bold'])} {_id} = {self.pprint_num(val)}")
     # Print using in magenta
     def pprint_using(self, _id, val):
-        print(f"{colored('using ','magenta')} {_id} = {self.pprint_num(val)}")
+        print(f"{tab}{colored('using',USING_COLOR)} {_id} = {self.pprint_num(val)}")
 
     # Evaluate AST
     def eval_tree(self, tree, ctx=None):
@@ -96,7 +97,7 @@ class GeckoParser(Parser):
         # ('id-lookup', id)
         elif op=='id-lookup':
             if (tree[1]=='ans'):
-                print(colored('ans','cyan') + f" = {self.ans}")
+                print(tab + colored('ans',ANS_COLOR) + f" = {self.ans}")
                 return self.ans
             try:
                 # scope variables in 'ctx'
@@ -119,7 +120,7 @@ class GeckoParser(Parser):
                         self.printed_ids += [tree[1]]
                 return val
             except:
-                print(f"{colored('Invalid ID','red')} {tree[1]}")
+                print(f"{tab}{colored('Invalid ID',INVALID_ID_COLOR)} {tree[1]}")
                 return 0
         # ('group',expr)
         elif op=='group':
@@ -130,14 +131,14 @@ class GeckoParser(Parser):
             try:
                 return self.mathfuncs[func](val)
             except:
-                print(f"Function {func} domain error (used val = {val})")
+                print(f"{tab}Function {func} domain error (used val = {val})")
                 return 0
         # ('binop', op, arg1, arg2)
         elif op=='binop':
             try:
                 return self.binops[tree[1]](self.eval_tree(tree[2],ctx=ctx), self.eval_tree(tree[3],ctx=ctx))
             except:
-                print("Error: division by zero")
+                print(f"{tab}Error: division by zero")
                 return 0
         # ('lambda', prev_exp, exp)
         elif op=='lambda':
@@ -146,7 +147,7 @@ class GeckoParser(Parser):
         elif op=='lambda-x':
             return self.eval_tree(tree[3], ctx = {tree[1]: self.eval_tree(tree[2],ctx=ctx)})
         else:
-            print("Error.")
+            print(f"{tab}Error.")
             return None
 
     ####### Grammar #######
@@ -177,7 +178,7 @@ class GeckoParser(Parser):
         if p.expr[0] in ['assign','nop']: pass
         else:
             self.ans = self.eval_tree(('tree',p.expr))
-            print(f"{self.pprint_num(self.ans)}")
+            print(f"{tab}{self.pprint_num(self.ans)}")
 
     @_('CALC ID')
     def statement(self, p):
@@ -195,19 +196,19 @@ class GeckoParser(Parser):
             norm = colored(self.pprint_num(abs(num)),'white',attrs=['bold'])
             phase = colored(f'{self.pprint_num(angle(num))} rad','white',attrs=['bold'])
             phase_deg = self.pprint_num(math.degrees(angle(num)))
-            print(f"{norm} {colored('@','green')} {phase} ({phase_deg} deg)")
+            print(f"{tab}{norm} {colored('@','green')} {phase} ({phase_deg} deg)")
 
     @_('VARS')
     def statement(self, p):
         if (len(self.ids)>0) and not (len(self.mathconsts)==len(self.ids)):
-            print(colored('Vars:','white',attrs=['bold']))
+            print(tab + colored('Vars:','white',attrs=['bold']))
             # Longest ID + escape sequences for color + 1
             padding = len(max(self.ids.keys(), key=len))+8+1
-            for var in self.ids.keys():
+            for var in sorted(self.ids.keys()):
                 if var not in self.mathconsts:
-                    print(f"{colored(var,'red'):{padding}} = {self.pprint_num(self.ids[var][1])}")
+                    print(f"{tab}{colored(var,VAR_COLOR):{padding}} = {self.pprint_num(self.ids[var][1])}")
         else:
-            print(colored('No initialized variables','white',attrs=['bold']))
+            print(tab + colored('No initialized variables','white',attrs=['bold']))
 
     # Deletes all variables
     @_('NEW')
@@ -239,7 +240,7 @@ class GeckoParser(Parser):
     @_('ID ASSIGN expr')
     def expr(self, p):
         if (p.ID=='ans'):
-            print(colored('Invalid ID','red')+" ans")
+            print(tab + colored('Invalid ID',INVALID_ID_COLOR)+" ans")
             return ('assign',self.ans)
         if (p.ID in self.mathconsts):
             self.mathconsts.remove(p.ID)
@@ -279,7 +280,7 @@ class GeckoParser(Parser):
     def mini_term(self, p):
         return ('binop','*',('number',float(p.NUMBER)),('binop','^',p.mini_term,p.expr))
 
-    @_('MATHFUNC expr')
+    @_('MATHFUNC LPAREN expr RPAREN')
     def mini_term(self, p):
         return ('mathfunc',p.MATHFUNC,p.expr)
 
@@ -290,16 +291,19 @@ class GeckoParser(Parser):
 # Utils for INIT #
 
 g = lambda x: colored(x, 'green')
+b = lambda x: colored(x, 'white', attrs=['bold'])
+pipe = colored('|','red')
+
 def REPL():
     # Credits to ANDREAS FREISE (whoever you are) for the ASCII gecko
     gecko ="\n"+\
-g(r"                       )/_         ")+"""|\n"""+\
-g(r'             _.--..---"-,--c_      ')+"""|   Gecko REPL\n"""+\
-g(r"        \L..'           ._O__)_    ")+"""|\n"""+\
-g(r",-.     _.+  _  \..--( /           ")+"""|   Version 0.0.1 (2021-04)\n"""+\
-g(r"  `\.-''__.-' \ (     \_           ")+"""|\n"""+\
-g(r"    `'''       `\__   /\           ")+"""|   Made by Guido Dipietro\n"""+\
-g(r"                ')                 ")+"""|\n"""
+g(r"                       )/_         ")+pipe+"""\n"""+\
+g(r'             _.--..---"-,--c_      ')+pipe+"""   https://github.com/GuidoDipietro/geckolang\n"""+\
+g(r"        \L..'           ._O__)_    ")+pipe+"""\n"""+\
+g(r",-.     _.+  _  \..--( /           ")+pipe+"""   """+b('Gecko REPL')+""" - v0.0.1 (2021-05)\n"""+\
+g(r"  `\.-''__.-' \ (     \_           ")+pipe+"""\n"""+\
+g(r"    `'''       `\__   /\           ")+pipe+"""   Made by Guido Dipietro - Artwork by Andreas Freise\n"""+\
+g(r"                ')                 ")+pipe+"""\n"""
 
     print(gecko)
 
