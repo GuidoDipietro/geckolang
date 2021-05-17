@@ -3,8 +3,8 @@ from sly import Lexer
 class GeckoLexer(Lexer):
     tokens = {  ID, PLUS, MINUS, TIMES,
                 DIV, POW, MATHFUNC, NUMBER,
-                LPAREN, RPAREN, ASSIGN, THEN, POLAR,
-                CALC, EXIT, NEWLINE, TICK,
+                LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR,
+                CALC, EXIT, NEWLINE, TICK, COMMA,
                 SEMI, VARS, NEW }
 
     ignore = ' \t'
@@ -28,6 +28,7 @@ class GeckoLexer(Lexer):
     ID['abs']   = MATHFUNC
     ID['polar'] = POLAR
     ID['then']  = THEN
+    ID['with']  = WITH
     ID['calc']  = CALC
     ID['gg']    = EXIT
     ID['vars']  = VARS
@@ -46,6 +47,7 @@ class GeckoLexer(Lexer):
     NEWLINE     = r'\n'
     TICK        = r"'"
     SEMI        = r';'
+    COMMA       = r','
 
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])

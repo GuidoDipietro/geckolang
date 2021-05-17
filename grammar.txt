@@ -2,15 +2,19 @@ root		:			statements
 			|
 
 statements	:			statements statement
-			|			statements ; statement
+			|			statements , statement
 			|			statement
 
 statement	:			expr
 			|			CALC ID
+			|			ids_assign expr
 			|			EXIT
 			|			VARS
 			|			NEW
 			|			POLAR expr
+
+ids_assign	:			ID ASSIGN
+			|			ids_assign ID ASSIGN
 
 expr		:			expr + expr
 			|			expr - expr
@@ -20,9 +24,12 @@ expr		:			expr + expr
 			|			- expr							%prec UMINUS
 			|			mini_term
 			|			NUMBER
-			|			ID ASSIGN expr
 			|			expr THEN expr
 			|			expr THEN ' ID expr '
+			|			expr WITH with_assigns
+
+with_assigns:			ID ASSIGN expr SEMI
+			|			with_assigns ID ASSIGN expr SEMI
 
 mini_term	:			ID
 			|			NUMBER mini_term				%prec CONSTANT

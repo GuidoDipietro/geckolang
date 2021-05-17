@@ -89,8 +89,7 @@ class GeckoParser(Parser):
     def eval_tree(self, tree, ctx=None):
         op = tree[0]
         # ('tree', root)
-        # ('assign', thing)
-        if op=='tree' or op=='assign':
+        if op=='tree':
             return self.eval_tree(tree[1],ctx=ctx)
         # ('number', float)
         elif op=='number':
@@ -147,6 +146,9 @@ class GeckoParser(Parser):
         # ('lambda-x', temp_var, prev_exp, exp)
         elif op=='lambda-x':
             return self.eval_tree(tree[3], ctx = {tree[1]: self.eval_tree(tree[2],ctx=ctx)})
+        # ('with-expr', expr, immediate_context)
+        elif op=='with-expr':
+            return self.eval_tree(tree[1], ctx = tree[2])
         else:
             print(f"{tab}Error.")
             return None
@@ -159,10 +161,10 @@ class GeckoParser(Parser):
         ...
     @_('statements NEWLINE statement')
     def statements(self, p):
-        pass
-    @_('statements SEMI statement')
+        ...
+    @_('statements COMMA statement')
     def statements(self, p):
-        pass
+        ...
     @_('statement')
     def statements(self, p):
         self.printed_ids = []
@@ -176,10 +178,31 @@ class GeckoParser(Parser):
     @_('expr')
     def statement(self, p):
         # print(p.expr) # cheap debug xd
-        if p.expr[0] in ['assign','nop']: pass
+        if p.expr[0] in ['nop']: pass
         else:
             self.ans = self.eval_tree(('tree',p.expr))
             print(f"{tab}{self.pprint_num(self.ans)}")
+
+    @_('ids_assign expr')
+    def statement(self, p):
+        for _id in p.ids_assign:
+            if (_id=='ans'):
+                print(tab + colored('Invalid ID',INVALID_ID_COLOR)+" ans")
+                return ('assign',self.ans)
+            if (_id in self.mathconsts):
+                self.mathconsts.remove(_id)
+            self.printed_ids = []
+            self.ids[_id] = [p.expr, self.eval_tree(p.expr)]
+            self.pprint_final(_id, self.ids[_id][1])
+
+    @_('ID ASSIGN')
+    def ids_assign(self, p):
+        return [p.ID]
+    @_('ids_assign ID ASSIGN')
+    def ids_assign(self, p):
+        if p.ID not in p.ids_assign:
+            return [*p.ids_assign, p.ID]
+        return p.ids_assign
 
     @_('CALC ID')
     def statement(self, p):
@@ -238,18 +261,6 @@ class GeckoParser(Parser):
     def expr(self, p):
         return p.mini_term
 
-    @_('ID ASSIGN expr')
-    def expr(self, p):
-        if (p.ID=='ans'):
-            print(tab + colored('Invalid ID',INVALID_ID_COLOR)+" ans")
-            return ('assign',self.ans)
-        if (p.ID in self.mathconsts):
-            self.mathconsts.remove(p.ID)
-        self.printed_ids = []
-        self.ids[p.ID] = [p.expr, self.eval_tree(p.expr)]
-        self.pprint_final(p.ID, self.ids[p.ID][1])
-        return ('assign',p.expr)
-
     @_('expr THEN TICK ID expr TICK')
     def expr(self, p):
         # I want to actually use x as a global var
@@ -258,6 +269,20 @@ class GeckoParser(Parser):
     @_('expr THEN expr')
     def expr(self, p):
         return ('lambda',p.expr0,p.expr1)
+
+    # expr WITH stuff (5+15a*b^2 with a=sin(4)^2; b=2pi;)
+
+    @_('expr WITH with_assigns')
+    def expr(self, p):
+        return ('with-expr', p.expr, p.with_assigns)
+
+    @_('ids_assign expr SEMI')
+    def with_assigns(self, p):
+        return {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
+    @_('with_assigns ids_assign expr SEMI')
+    def with_assigns(self, p):
+        new_dict = {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
+        return {**p.with_assigns, **new_dict}
 
     ### mini_term (terms for 4x, 4x^2 type of stuff)
     # literally i dont understand how this dumb fix actually worked
