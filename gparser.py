@@ -107,7 +107,11 @@ class GeckoParser(Parser):
                 # By default, x is the lambda variable.
                 # 'ID expr' defines another one if x is a global variable
                 if ctx and tree[1] in ctx.keys():
-                    val = ctx[tree[1]]
+                    try:
+                        # Unevaluated 'with_assign'
+                        val = self.eval_tree(ctx[tree[1]], ctx=ctx)
+                    except:
+                        val = ctx[tree[1]]
                 else:
                     val = self.ids[tree[1]][1]
 
@@ -139,17 +143,17 @@ class GeckoParser(Parser):
             try:
                 return self.binops[tree[1]](self.eval_tree(tree[2],ctx=ctx), self.eval_tree(tree[3],ctx=ctx))
             except:
-                print(f"{tab}Error: division by zero")
+                print(f"{tab}Math error")
                 return 0
         # ('lambda', prev_exp, exp)
         elif op=='lambda':
-            return self.eval_tree(tree[2], ctx = {'x': self.eval_tree(tree[1],ctx=ctx)})
+            return self.eval_tree(tree[2], ctx = {**ctx, 'x': self.eval_tree(tree[1],ctx=ctx)})
         # ('lambda-x', temp_var, prev_exp, exp)
         elif op=='lambda-x':
-            return self.eval_tree(tree[3], ctx = {tree[1]: self.eval_tree(tree[2],ctx=ctx)})
+            return self.eval_tree(tree[3], ctx = {**ctx, tree[1]: self.eval_tree(tree[2],ctx=ctx)})
         # ('with-expr', expr, immediate_context)
         elif op=='with-expr':
-            return self.eval_tree(tree[1], ctx = tree[2])
+            return self.eval_tree(tree[1], ctx = {**ctx, **tree[2]})
         # ('func-call', ID, [exprs]), self.funcs = { 'hypot': (['x','y'], expr) }
         elif op=='func-call':
             func_args, func_expr = self.funcs[tree[1]]
@@ -213,14 +217,14 @@ class GeckoParser(Parser):
         return p.ids_assign
 
     ## WITH expression assignment (different from ID assignment sentence)
-        # These assignments are temporal and are not stored, end in a
+        # These assignments are temporal and are not stored as vars, end in a
         # semicolon and are only to be used within WITH expressions
     @_('ids_assign expr SEMI')
     def with_assigns(self, p):
-        return {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
+        return {_id: ('tree',p.expr) for _id in p.ids_assign}
     @_('with_assigns ids_assign expr SEMI')
     def with_assigns(self, p):
-        new_dict = {_id: self.eval_tree(p.expr) for _id in p.ids_assign}
+        new_dict = {_id: ('tree',p.expr) for _id in p.ids_assign}
         return {**p.with_assigns, **new_dict}
 
     ### STATEMENT ###
