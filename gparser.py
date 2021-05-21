@@ -164,6 +164,9 @@ class GeckoParser(Parser):
             return self.eval_tree(tree[1], ctx = tree[2])
         # ('func-call', ID, [exprs]), self.funcs = { 'hypot': (['x','y'], expr) }
         elif op=='func-call':
+            if tree[1] not in self.funcs.keys():
+                print(tab+colored(f"Function \"{tree[1]}\" doesn't exist",INVALID_COLOR))
+                return 0
             func_args, func_expr = self.funcs[tree[1]]
             # Wrong call, too many/few args
             if len(func_args) != len(tree[2]):
@@ -184,16 +187,17 @@ class GeckoParser(Parser):
     # yadda yadda root and recursion
     @_('statements','')
     def root(self, p):
-        ...
-    @_('statements NEWLINE statement')
+        return p.statements
+
+    @_( 'statements NEWLINE statement',
+        'statements COMMA statement')
     def statements(self, p):
-        ...
-    @_('statements COMMA statement')
-    def statements(self, p):
-        ...
+        return p.statement
+
     @_('statement')
     def statements(self, p):
         self.printed_ids = []
+        return p.statement
 
     ### Structural rules stuff (kinda in-between non-terminals for other non-terminals)
 
@@ -249,6 +253,9 @@ class GeckoParser(Parser):
             self.ans = self.eval_tree(('tree',p.expr))
             print(f"{tab}{self.pprint_num(self.ans)}")
 
+        # return self.eval_tree(('tree',p.expr))
+        return p.expr
+
     # ben=14, a=b=c=3, no return value, this isnt an expression!
     @_('ids_assign expr')
     def statement(self, p):
@@ -270,10 +277,10 @@ class GeckoParser(Parser):
         name, args = p.func_shape
         for arg in args:
             if arg[0]!='id-lookup': # f(a,14) = a+2
-                print(tab + colored('Invalid arguments',INVALID_COLOR))
+                print(tab + colored('Invalid arguments in function definition',INVALID_COLOR))
                 return
         if len(set(args)) != len(args): # f(a,a)=2
-            print(tab + colored('Invalid arguments',INVALID_COLOR))
+            print(tab + colored('Invalid arguments in function definition',INVALID_COLOR))
         else:
             self.funcs[name] = ([x[1] for x in args], p.expr)
 
