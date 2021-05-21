@@ -4,7 +4,7 @@ class GeckoLexer(Lexer):
     tokens = {  ID, PLUS, MINUS, TIMES,
                 DIV, POW, MATHFUNC, NUMBER,
                 LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR,
-                CALC, EXIT, NEWLINE, TICK, COMMA,
+                CALC, EXIT, NEWLINE, TICK, COMMA, PIPE,
                 SEMI, VARS, NEW }
 
     ignore = ' \t'
@@ -48,6 +48,7 @@ class GeckoLexer(Lexer):
     TICK        = r"'"
     SEMI        = r';'
     COMMA       = r','
+    PIPE        = r'\|'
 
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])

@@ -29,6 +29,7 @@ expr        :           expr + expr
             |           - expr                          %prec UMINUS
             |           NUMBER
             |           mini_term
+            |           PIPE expr PIPE
             |           expr THEN expr
             |           expr THEN ' ID expr '
             |           expr WITH with_assigns

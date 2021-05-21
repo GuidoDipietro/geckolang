@@ -35,6 +35,9 @@ if __name__ == "__main__":
         ("a=2, result = 10a+b with b=3; then rt(x), result", 23**0.5),
         ("a", 0),
         ("f(x,y) = x + 2^x, f(2, -135)", 2+2**2),
+        ("""   f(x,y)=x+y
+            f(1+s with s=22; then rt(x),   5)""", 23**0.5+5),
+        ("sum(x,y)=x+y, sum=15, sum(sum,sum(sum,sum))", 15+(15+15)), # what??
     ]
 
     for (expr, val) in tests:

@@ -357,6 +357,10 @@ class GeckoParser(Parser):
     def expr(self, p):
         return ('with-expr', p.expr, p.with_assigns)
 
+    @_('PIPE expr PIPE')
+    def expr(self, p):
+        return ('mathfunc', 'abs', p.expr)
+
     ### mini_term
     # not a boolean miniterm. This is my own mini_term.
     # These allow constant pre-pending as implicit multiplication (4x^2, 5sin(2))
