@@ -134,6 +134,8 @@ class GeckoParser(Parser):
         elif op=='mathfunc':
             func, val = tree[1], self.eval_tree(tree[2],ctx=ctx)
             try:
+                if func=='rt' and val<0:
+                    return math.sqrt(-val)*1j
                 return self.mathfuncs[func](val)
             except:
                 print(f"{tab}Function {func} domain error (used val = {val})")
@@ -147,13 +149,19 @@ class GeckoParser(Parser):
                 return 0
         # ('lambda', prev_exp, exp)
         elif op=='lambda':
-            return self.eval_tree(tree[2], ctx = {**ctx, 'x': self.eval_tree(tree[1],ctx=ctx)})
+            if ctx:
+                return self.eval_tree(tree[2], ctx = {**ctx, 'x': self.eval_tree(tree[1],ctx=ctx)})
+            return self.eval_tree(tree[2], ctx = {'x': self.eval_tree(tree[1],ctx=ctx)})
         # ('lambda-x', temp_var, prev_exp, exp)
         elif op=='lambda-x':
-            return self.eval_tree(tree[3], ctx = {**ctx, tree[1]: self.eval_tree(tree[2],ctx=ctx)})
+            if ctx:
+                return self.eval_tree(tree[3], ctx = {**ctx, tree[1]: self.eval_tree(tree[2],ctx=ctx)})
+            return self.eval_tree(tree[3], ctx = {tree[1]: self.eval_tree(tree[2],ctx=ctx)})
         # ('with-expr', expr, immediate_context)
         elif op=='with-expr':
-            return self.eval_tree(tree[1], ctx = {**ctx, **tree[2]})
+            if ctx:
+                return self.eval_tree(tree[1], ctx = {**ctx, **tree[2]})
+            return self.eval_tree(tree[1], ctx = tree[2])
         # ('func-call', ID, [exprs]), self.funcs = { 'hypot': (['x','y'], expr) }
         elif op=='func-call':
             func_args, func_expr = self.funcs[tree[1]]
@@ -388,7 +396,7 @@ g = lambda x: colored(x, 'green')
 b = lambda x: colored(x, 'white', attrs=['bold'])
 pipe = colored('|','red')
 
-def REPL():
+def REPL(lexer, parser):
     # Credits to ANDREAS FREISE (whoever you are) for the ASCII gecko
     gecko ="\n"+\
 g(r"                       )/_         ")+pipe+"""\n"""+\
@@ -409,15 +417,3 @@ g(r"                ')                 ")+pipe+"""\n"""
             break
         if text:
             parser.parse(lexer.tokenize(text))
-
-##########################
-########## MAIN ##########
-##########################
-
-if __name__ == '__main__':
-
-    init() # Colorama stuff
-    lexer = GeckoLexer()
-    parser = GeckoParser()
-
-    REPL()
