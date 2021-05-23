@@ -17,7 +17,23 @@ if __name__ == "__main__":
 
     tests = [
         # Last expression is called twice, keep in mind if you're testing 'ans' stuff
+        ("-4+5^2*10/2-2* 2+2", -4+5**2*10/2-2* 2+2),
+        ("x=10, -2x^3", -2000),
+        ("x=10, (-2x)^3", (-20)**3),
         ("4+5", 9),
+        ("a=b=c=d=e=f=g=1, a+b+c then x*(d+BEN) with BEN=(e+f)*(g+1);", 3*(1+4)),
+        ("""   a=b=c=d=e=f=g=h=i=j=k=l=m=n=o=p=q=r=s=t=u=v=w=x=y=z=1
+            a+b+c+d+e+f+g+h+i then x*(j+k+l+m+n+o+p+q+BEN) with BEN=(r+s)*(t+u)*(v+w)*(x+y)*z;""", 9*(8+2**3*(9+1))),
+        ("""   a=b=c=d=e=f=g=h=i=j=k=l=m=n=o=p=q=r=s=t=u=v=w=x=y=z=1
+            a+b+c+d+e+f+g+h+i then x*(j+k+l+m+n+o+p+q+BEN) with BEN=(r+s)*(t+u)*(v+w)*(1+y)*z;""", 9*(8+16)),
+        ("_=__=___=____=_____=a, __/___+____/_____+(_+1)/(_+1), d = 14ans, d", 14),
+        ("a=10, ----------a", 10),
+        ("a=10, -(-a) then --x^2 then --rt(x)", 10),
+        ("a=10, --a^2 then (--x^2) then (--x)^2 then --(-x^2)", -10**16),
+        ("x=10, f(x,y)=x+y, f(2,3)", 5),
+        ("x=10, f(x,y)=y then 's x+s', f(2,3)", 5),
+        ("x=10, f(x,y)=y+c with c=0 then 's s+x';, f(2,3)", 5),
+        ("x=10, f(x,y)=y+c with c=x;, f(2,3)", 5),
         ("a=b=2, d=-2a^2+5b, ans", 0),
         ("a=b=2, d=-2a^2+5b, d, 10ans, ans", 10*(-2*4+10)),
         ("x=10, d=a+x with a=6;, d", 16),
@@ -38,23 +54,30 @@ if __name__ == "__main__":
         ("""   f(x,y)=x+y
             f(1+s with s=22; then rt(x),   5)""", 23**0.5+5),
         ("sum(x,y)=x+y, sum=15, sum(sum,sum(sum,sum))", 15+(15+15)), # what??
+        ("x=10, d = a+b+x with a=2; b=3a; then x^2 then 's s+x', d", (2+6+10)**2+10),
+        ("f(x,y)=x+y, f(15)", 0),
+        ("f(x,y^2)=x+y", None),
+        ("polar 3+2j", 3+2j),
+        ("f(x) = -3j+rt(x), n1 = rt(-16) + 1j(rt(-9)), n2 = f(-4), n1*n2 then x^0.5", ((-3+4j)*(-1j))**0.5),
+        ("r_p(a,b,c) = -b+rt(disc) then x/2a with disc=b^2-4a*c;, r_p(2,3,-5)",1),
+        ("r_p(a,b,c) = -b+rt(disc) then x/2a with disc=b^2-4a*c;, r_p(1,0,1)",1j),
     ]
 
     for (expr, val) in tests:
         # Parsing wrapped with a stdout redirect to prevent prints unless --echo flag
         if (len(sys.argv)>1 and sys.argv[1]=='--echo'):
             tree = parser.parse(lexer.tokenize("new,"+expr))
-            comp = parser.eval_tree(tree)
-            print(tree)
+            comp = parser.eval_tree(tree) if tree else None
+            # print(tree)
         else:
             old_stdout = sys.stdout
             sys.stdout = open(os.devnull, "w")
             tree = parser.parse(lexer.tokenize("new,"+expr))
-            comp = parser.eval_tree(tree)
+            comp = parser.eval_tree(tree) if tree else None
             sys.stdout = old_stdout
 
         if comp == val:
-            print(f"{colored('PASSED','green')} [ {expr} ] == {colored(f'({val})','cyan')}\n")
+            print(  f"{colored('PASSED','green')} [ {expr} ] == {colored(f'({val})','cyan')}\n")
         else:
             print(  f"{colored('FAILED','red')} [ {expr} ], {colored(f'EXPECTED ({val})','yellow')}"+
                     f", {colored(f'GOT ({comp})','red')}\n")
@@ -64,4 +87,4 @@ if __name__ == "__main__":
     if failed>0:
         print(f"{colored(f'FAILED: {failed}','red')} (out of {len(tests)})\n")
     else:
-        print(colored("All tests were successful.\n",'green'))
+        print(colored(f"All {len(tests)} tests were successful.\n",'green'))

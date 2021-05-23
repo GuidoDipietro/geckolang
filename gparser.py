@@ -185,7 +185,7 @@ class GeckoParser(Parser):
     ####### Grammar #######
 
     # yadda yadda root and recursion
-    @_('statements','')
+    @_('statements')
     def root(self, p):
         return p.statements
 
@@ -301,6 +301,7 @@ class GeckoParser(Parser):
             phase = colored(f'{self.pprint_num(angle(num))} rad','white',attrs=['bold'])
             phase_deg = self.pprint_num(math.degrees(angle(num)))
             print(f"{tab}{norm} {colored('@','green')} {phase} ({phase_deg} deg)")
+        return p.expr
 
     @_('VARS')
     def statement(self, p):
@@ -374,8 +375,13 @@ class GeckoParser(Parser):
 
     @_('NUMBER mini_term %prec CONSTANT')
     def mini_term(self, p):
-        if p.mini_term[1]=='j':
+        # 5j, it's parsed as a complex number not 5 * j (ID)
+        if p.mini_term == ('id-lookup','j'):
             return ('number',complex(p.NUMBER+'j'))
+        # 5j(2), it's parsed as 5j * 2 = 10j (complex), not 5 * j(2) (func-call)
+        if p.mini_term[0]=='func-call' and p.mini_term[1]=='j':
+            return ('binop','*',('number',complex(p.NUMBER+'j')),p.mini_term[2][0])
+        # Otherwise, regular ol' NUMBER mini_term 5x type of thing
         return ('binop','*',('number',float(p.NUMBER)),p.mini_term)
 
     @_('LPAREN expr RPAREN mini_term %prec CONSTANT')
