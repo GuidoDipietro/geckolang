@@ -33,6 +33,7 @@ expr        :           expr + expr
             |           expr THEN expr
             |           expr THEN ' ID expr '
             |           expr WITH with_assigns
+            |           INT expr FROM expr TO expr SEMI
 
 exprs       :           expr COMMA
             |           exprs expr COMMA

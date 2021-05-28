@@ -2,6 +2,7 @@ from gparser import GeckoParser
 from glexer import GeckoLexer
 from colorama import init
 from termcolor import colored
+import math
 import sys
 import os
 
@@ -61,6 +62,16 @@ if __name__ == "__main__":
         ("f(x) = -3j+rt(x), n1 = rt(-16) + 1j(rt(-9)), n2 = f(-4), n1*n2 then x^0.5", ((-3+4j)*(-1j))**0.5),
         ("r_p(a,b,c) = -b+rt(disc) then x/2a with disc=b^2-4a*c;, r_p(2,3,-5)",1),
         ("r_p(a,b,c) = -b+rt(disc) then x/2a with disc=b^2-4a*c;, r_p(1,0,1)",1j),
+        ("f(x)=2x^2+1, g(x)=f(x) then 1/x^2+a with a=6;, int g(x) from 0 to 1;", 6.504422096094687),
+        ("f(x) = sin(x)+1, int f(x) from -2pi to 0.5pi;", 1+(5*math.pi)/2),
+        ("f(x)=2x, int f(x) from f(1) to f(f(f(2)));", 16*16 - 2*2),
+        ("""   x=10, f(x)=x
+            int f(x) from x-9 to (a with a=x;); + int f(x) from 0 to x/x;""", 50),
+        ("""   x=10, f(x)=x
+            int f(x) from x-9 to a with a=x;; + int f(x) from 0 to x/x;""", 50),
+        ("f(x) = |x|, int f(x) from -10 to 10;", 100),
+        ("f(x) = x, int f(x) from -10 to 10;", 0),
+        ("wtf(x,y) = 2y + int e^x from x to 3;, wtf(1,2)", 21.367255094728623),
     ]
 
     for (expr, val) in tests:

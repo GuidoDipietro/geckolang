@@ -7,6 +7,7 @@ from glexer import GeckoLexer
 from colorama import init
 from termcolor import colored
 from settings import *
+from scipy.integrate import quad
 
 class GeckoParser(Parser):
     # debugfile = 'parser.out'
@@ -178,9 +179,19 @@ class GeckoParser(Parser):
             for _id,expr in zip(func_args, tree[2]):
                 func_ctx[_id] = self.eval_tree(expr, ctx=ctx)
             return self.eval_tree(func_expr, ctx = func_ctx)
+        # ('integrate', tree, x0, x1)
+        elif op=='integrate':
+            func = self.tree_to_scalar_function(tree[1], ctx)
+            x0 = self.eval_tree(tree[2], ctx)
+            x1 = self.eval_tree(tree[3], ctx)
+            return quad(func, x0, x1)[0]
         else:
             print(f"{tab}Error.")
             return 0
+
+    def tree_to_scalar_function(self, tree, ctx):
+        func = lambda x: self.eval_tree(tree, ctx={**ctx,'x': x} if ctx else {'x': x})
+        return func
 
     ####### Grammar #######
 
@@ -361,6 +372,10 @@ class GeckoParser(Parser):
     @_('PIPE expr PIPE')
     def expr(self, p):
         return ('mathfunc', 'abs', p.expr)
+
+    @_('INT expr FROM expr TO expr SEMI')
+    def expr(self, p):
+        return ('integrate', p.expr0, p.expr1, p.expr2)
 
     ### mini_term
     # not a boolean miniterm. This is my own mini_term.

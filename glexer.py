@@ -5,7 +5,8 @@ class GeckoLexer(Lexer):
                 DIV, POW, MATHFUNC, NUMBER,
                 LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR,
                 CALC, EXIT, NEWLINE, TICK, COMMA, PIPE,
-                SEMI, VARS, NEW }
+                SEMI, VARS, NEW,
+                INT, FROM, TO }
 
     ignore = ' \t'
 
@@ -33,6 +34,9 @@ class GeckoLexer(Lexer):
     ID['gg']    = EXIT
     ID['vars']  = VARS
     ID['new']   = NEW
+    ID['int']   = INT
+    ID['from']  = FROM
+    ID['to']    = TO
 
     NUMBER      = r'([0-9]*[.])?[0-9]+(e\-?[0-9]+)?'
 

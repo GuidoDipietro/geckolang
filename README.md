@@ -39,6 +39,8 @@ An interactive REPL devised for quickly getting calculations done.
 
 <!-- One-line function definitions TODO -->
 
+<!-- ONE LINE INTEGRATION TODO -->
+
 # Gecko REPL feature description
 
 *"Let's break Gecko"*, they said.
