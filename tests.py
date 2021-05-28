@@ -72,6 +72,9 @@ if __name__ == "__main__":
         ("f(x) = |x|, int f(x) from -10 to 10;", 100),
         ("f(x) = x, int f(x) from -10 to 10;", 0),
         ("wtf(x,y) = 2y + int e^x from x to 3;, wtf(1,2)", 21.367255094728623),
+        ("x=10, int 1/x then 1/x from x with x=1; to x then x-8;", 3/2),
+        ("x=10, int 0 then 's s+x' from 5 to 10;", 37.50000000000001), # my face
+        ("a=10, int 0 then 's s+a' from 5 to 10;", 50),
     ]
 
     for (expr, val) in tests:
