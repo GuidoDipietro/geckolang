@@ -19,6 +19,7 @@ if __name__ == "__main__":
     tests = [
         # Last expression is called twice, keep in mind if you're testing 'ans' stuff
         ("-4+5^2*10/2-2* 2+2", -4+5**2*10/2-2* 2+2),
+        ("5+15a*b^2 with a=sin(4)^2, b=2pi", 5 + 15*(math.sin(4)**2)*(4*math.pi*math.pi)),
         ("x=10; -2x^3", -2000),
         ("x=10; (-2x)^3", (-20)**3),
         ("4+5", 9),
@@ -62,19 +63,34 @@ if __name__ == "__main__":
         ("f(x) = -3j+rt(x); n1 = rt(-16) + 1j(rt(-9)); n2 = f(-4); n1*n2 then x^0.5", ((-3+4j)*(-1j))**0.5),
         ("r_p(a,b,c) = -b+rt(disc) then x/2a with disc=b^2-4a*c; r_p(2,3,-5)",1),
         ("r_p(a,b,c) = -b+rt(disc) then x/2a with disc=b^2-4a*c; r_p(1,0,1)",1j),
-        ("f(x)=2x^2+1; g(x)=f(x) then 1/x^2+a with a=6; int g(x) from 0 to 1;", 6.504422096094687),
-        ("f(x) = sin(x)+1; int f(x) from -2pi to 0.5pi;", 1+(5*math.pi)/2),
-        ("f(x)=2x; int f(x) from f(1) to f(f(f(2)));", 16*16 - 2*2),
+        ("f(x)=2x^2+1; g(x)=f(x) then 1/x^2+a with a=6; int g(x) from 0 to 1", 6.504422096094687),
+        ("f(x) = sin(x)+1; int f(x) from -2pi to 0.5pi", 1+(5*math.pi)/2),
+        ("f(x)=2x; int f(x) from f(1) to f(f(f(2)))", 16*16 - 2*2),
         ("""   x=10; f(x)=x
-            int f(x) from x-9 to (a with a=x); + int f(x) from 0 to x/x;""", 50),
+            (int f(x) from x-9 to (a with a=x))$ + (int f(x) from 0 to x/x)""", 50),
         ("""   x=10; f(x)=x
-            int f(x) from x-9 to a with a=x; + int f(x) from 0 to x/x;""", 50),
-        ("f(x) = |x|; int f(x) from -10 to 10;", 100),
-        ("f(x) = x; int f(x) from -10 to 10;", 0),
-        ("wtf(x,y) = 2y + int e^x from x to 3;; wtf(1,2)", 21.367255094728623),
-        ("x=10; int 1/x then 1/x from x with x=1 to x then x-8;", 3/2),
-        ("x=10; int 0 then 's s+x' from 5 to 10;", 37.50000000000001), # my face
-        ("a=10; int 0 then 's s+a' from 5 to 10;", 50),
+            int f(x) from x-9 to (a with a=x)$ + int f(x) from 0 to x/x""", 50),
+        ("""   x=10; f(x)=x
+            int f(x) from x-9 to a with a=x+ int f(x) from 0 to x/x""", 54.625),
+        ("""   x=10; f(x)=x
+            int f(x) from x-9 to (a with a=x+ int f(x) from 0 to x/x)""", 54.625),
+        ("""   x=10; f(x)=x
+            int f(x) from x-9 to a with a=x $ + int f(x) from 0 to x/x""", 50),
+        ("f(x) = |x|; int f(x) from -10 to 10", 100),
+        ("f(x) = x; int f(x) from -10 to 10", 0),
+        ("wtf(x,y) = 2y + int e^x from x to 3; wtf(1,2)", 21.367255094728623),
+        ("x=10; int 1/x then 1/x from x with x=1 to x then x-8", 3/2),
+        ("x=10; int 0 then 's s+x' from 5 to 10", 37.50000000000001), # my face
+        ("a=10; int 0 then 's s+a' from 5 to 10", 50),
+        ("1+2*3", 7),
+        ("1+2 $ *3", 9),
+        ("1+1+1+1+1+1 $ * 5", 30),
+        ("int x from 0 to 1 + 14", 112.50000000000001),
+        ("int x from 0 to 1 $+ 14", 14.5),
+        ("5j(2)", 10j),
+        ("j2=6; 5j2", 30),
+        ("j(x)=2x; 5*j(2)", 20),
+        ("j(x)=x^2+1; 5 $ j(2)", 25),
     ]
 
     for (expr, val) in tests:

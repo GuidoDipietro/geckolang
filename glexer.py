@@ -6,7 +6,7 @@ class GeckoLexer(Lexer):
                 LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR,
                 CALC, EXIT, NEWLINE, TICK, COMMA, PIPE,
                 SEMI, VARS, NEW,
-                INT, FROM, TO }
+                INT, FROM, TO, CROCANTE }
 
     ignore = ' \t'
 
@@ -53,6 +53,7 @@ class GeckoLexer(Lexer):
     SEMI        = r';'
     COMMA       = r','
     PIPE        = r'\|'
+    CROCANTE    = r'\$'
 
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])

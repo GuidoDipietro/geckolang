@@ -1,59 +1,65 @@
-root        :           statements
-            |
+statements      :           statements \n statement
+                |           statements ; statement
+                |           statement
 
-statements  :           statements \n statement
-            |           statements , statement
-            |           statement
+statement       :           EXIT
+                |           expr
+                |           ids_assign expr
+                |           func_shape ASSIGN expr
+                |           CALC ID
+                |           POLAR expr
+                |           expr POLAR
+                |           VARS
+                |           NEW
 
-statement   :           EXIT
-            |           expr
-            |           ids_assign expr
-            |           func_shape ASSIGN expr
-            |           CALC ID
-            |           POLAR expr
-            |           expr POLAR
-            |           VARS
-            |           NEW
+func_shape      :           ID LPAREN exprs expr RPAREN
+                |           ID LPAREN expr RPAREN
 
-func_shape  :           ID LPAREN exprs expr RPAREN
-            |           ID LPAREN expr RPAREN
+exprs           :           expr COMMA
+                |           exprs expr COMMA
 
-ids_assign  :           ID ASSIGN
-            |           ids_assign ID ASSIGN
+ids_assign      :           ID ASSIGN
+                |           ids_assign ID ASSIGN
 
-expr        :           expr + expr
-            |           expr - expr
-            |           expr * expr
-            |           expr / expr
-            |           expr ^ expr
-            |           - expr                          %prec UMINUS
-            |           NUMBER
-            |           mini_term
-            |           PIPE expr PIPE
-            |           expr THEN expr
-            |           expr THEN ' ID expr '
-            |           expr WITH with_assigns
-            |           INT expr FROM expr TO expr SEMI
+expr            :           expr + expr
+                |           expr - expr
+                |           expr * expr
+                |           expr / expr
+                |           expr ^ expr
+                |           - expr                              %prec UMINUS
+                |           NUMBER
+                |           mini_term
+                |           PIPE expr PIPE
+                |           expr THEN expr
+                |           expr THEN ' ID expr '
+                |           with_expr                           %prec COMPO_WITH_EXPR
+                |           with_expr with_assigns              %prec COMPO_WITH_EXPR
+                |           INT expr FROM expr TO expr          %prec INTEGRAL
+                |           expr CROCANTE
 
-exprs       :           expr COMMA
-            |           exprs expr COMMA
+mono_with_expr  :           expr WITH ID ASSIGN expr            %prec MONO_WITH_EXPR
 
-with_assigns:           ID ASSIGN expr SEMI
-            |           with_assigns ID ASSIGN expr SEMI
+with_assigns    :           COMMA ids_assign expr               %prec WITH_ASSIGNS
+                |           with_assigns COMMA ids_assign expr  %prec WITH_ASSIGNS
 
-mini_term   :           ID
-            |           NUMBER mini_term                %prec CONSTANT
-            |           LPAREN expr RPAREN mini_term    %prec CONSTANT
-            |           NUMBER mini_term POW expr
-            |           MATHFUNC LPAREN expr RPAREN
-            |           func_shape
-            |           LPAREN expr RPAREN
+mini_term       :           ID
+                |           NUMBER mini_term                    %prec CONSTANT
+                |           LPAREN expr RPAREN mini_term        %prec CONSTANT
+                |           NUMBER mini_term POW expr
+                |           MATHFUNC LPAREN expr RPAREN
+                |           func_shape
+                |           LPAREN expr RPAREN
 
 ------
 
 precedence = (
+    ('right', CROCANTE),
     ('right', ASSIGN),
+    ('left', INTEGRAL),
     ('left', THEN),
+    ('left', COMPO_WITH_EXPR),
+    ('left', MONO_WITH_EXPR, COMMA),
+    ('right', WITH_ASSIGNS),
     ('left', PLUS, MINUS),
     ('left', TIMES, DIV),
     ('right', CONSTANT),

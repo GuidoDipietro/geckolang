@@ -10,15 +10,17 @@ from settings import *
 from scipy.integrate import quad
 
 class GeckoParser(Parser):
-    # debugfile = 'parser.out'
+    debugfile = 'parser.out'
 
     tokens = GeckoLexer.tokens
 
     precedence = (
+        ('right', CROCANTE),
         ('right', ASSIGN),
+        ('left', INTEGRAL),
         ('left', THEN),
-        ('left', MULTI_WITH_EXPR),
-        ('left', WITH_EXPR, COMMA),
+        ('left', WITH_EXPR),
+        ('left', MONO_WITH_EXPR, COMMA),
         ('right', WITH_ASSIGNS),
         ('left', PLUS, MINUS),
         ('left', TIMES, DIV),
@@ -247,7 +249,7 @@ class GeckoParser(Parser):
 
     @_('expr')
     def statement(self, p):
-        # print(p.expr) # cheap debug xd
+        print(p.expr) # cheap debug xd
         if p.expr[0] in ['nop']: pass
         else:
             self.ans = self.eval_tree(('tree',p.expr))
@@ -343,6 +345,10 @@ class GeckoParser(Parser):
     def expr(self, p):
         return p.mini_term
 
+    @_('PIPE expr PIPE')
+    def expr(self, p):
+        return ('mathfunc', 'abs', p.expr)
+
     @_('expr THEN expr')
     def expr(self, p):
         return ('lambda',p.expr0,p.expr1)
@@ -353,25 +359,40 @@ class GeckoParser(Parser):
         # x=10, var = rt(4) then 's s+x' -> var = 12
         return ('lambda-x',p.ID,p.expr0,p.expr1)
 
-    # expr WITH stuff (5+15a*b^2 with a=sin(4)^2; b=2pi;)
-    @_('with_expr %prec MULTI_WITH_EXPR')
+    @_('INT expr FROM expr TO expr %prec INTEGRAL')
     def expr(self, p):
-        return p.with_expr
-    @_('with_expr with_assigns %prec MULTI_WITH_EXPR')
+        return ('integrate', p.expr0, p.expr1, p.expr2)
+
+    # good ol' haskell curry
+    # $ CROCANTE operator reduces the expression no matter what it is
+    @_('expr CROCANTE')
     def expr(self, p):
-        _, expr0, _dict = p.with_expr
+        # 1+2 $ * 3 -> 9
+        return p.expr
+
+    # expr WITH stuff (5+15a*b^2 with a=sin(4)^2)
+    @_('mono_with_expr %prec WITH_EXPR')
+    def expr(self, p):
+        return p.mono_with_expr
+
+    # expr WITH stuffs (5+15a*b^2 with a=sin(4)^2, b=2pi)
+    @_('mono_with_expr with_assigns %prec WITH_EXPR')
+    def expr(self, p):
+        _, expr0, _dict = p.mono_with_expr
         return ('with-expr', expr0, {**_dict, **p.with_assigns})
 
-    @_('expr WITH ID ASSIGN expr %prec WITH_EXPR')
-    def with_expr(self, p):
-        return ('with-expr', p.expr0, {p.ID: p.expr1})
-    # @_('expr WITH ID ASSIGN expr with_assigns')
-    # def with_expr(self, p):
-    #     return ('with-expr', p.expr0, {p.ID: p.expr1, **p.with_assigns})
+    ### WITH expression non-terminals - it gets a bit messy here
+    # I really couldn't figure out another way to supress grammar conflicts, even though the parser was working swell with them
 
-    ## WITH expression assignment (different from ID assignment sentence)
-    # These assignments are temporal and are not stored as vars, end in a
-    # semicolon and are only to be used within WITH expressions
+    ## mono_with_expr (base WITH expression)
+    @_('expr WITH ID ASSIGN expr %prec MONO_WITH_EXPR')
+    def mono_with_expr(self, p):
+        return ('with-expr', p.expr0, {p.ID: p.expr1})
+
+    ## with_assigns (different from regular assigns)
+    # These assignments are temporal and are not stored as vars
+    # They look 'identical' to regular assigns, but these belong to WITH expressions
+    # only, and they actually begin with a comma (grammar tricks, I guess)
     @_('COMMA ids_assign expr %prec WITH_ASSIGNS')
     def with_assigns(self, p):
         return {_id: p.expr for _id in p.ids_assign}
@@ -380,25 +401,16 @@ class GeckoParser(Parser):
         new_dict = {_id: p.expr for _id in p.ids_assign}
         return {**p.with_assigns, **new_dict}
 
-    @_('PIPE expr PIPE')
-    def expr(self, p):
-        return ('mathfunc', 'abs', p.expr)
-
-    @_('INT expr FROM expr TO expr SEMI')
-    def expr(self, p):
-        return ('integrate', p.expr0, p.expr1, p.expr2)
-
     ### mini_term
     # not a boolean miniterm. This is my own mini_term.
     # These allow constant pre-pending as implicit multiplication (4x^2, 5sin(2))
-
-    # literally i dont understand how this dumb solution actually worked out
-    # im so scared
+    # Implicit product with this rule takes precedence over TIMES, DIV, PLUS, MINUS
 
     @_('ID')
     def mini_term(self, p):
         return ('id-lookup',p.ID)
 
+    # complex numbers match this rule, needs disambiguation
     @_('NUMBER mini_term %prec CONSTANT')
     def mini_term(self, p):
         # 5j, it's parsed as a complex number not 5 * j (ID)
