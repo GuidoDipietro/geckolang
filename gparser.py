@@ -17,6 +17,9 @@ class GeckoParser(Parser):
     precedence = (
         ('right', ASSIGN),
         ('left', THEN),
+        ('left', MULTI_WITH_EXPR),
+        ('left', WITH_EXPR, COMMA),
+        ('right', WITH_ASSIGNS),
         ('left', PLUS, MINUS),
         ('left', TIMES, DIV),
         ('right', CONSTANT),
@@ -196,12 +199,9 @@ class GeckoParser(Parser):
     ####### Grammar #######
 
     # yadda yadda root and recursion
-    @_('statements')
-    def root(self, p):
-        return p.statements
 
     @_( 'statements NEWLINE statement',
-        'statements COMMA statement')
+        'statements SEMI statement')
     def statements(self, p):
         return p.statement
 
@@ -238,17 +238,6 @@ class GeckoParser(Parser):
         if p.ID not in p.ids_assign:
             return [*p.ids_assign, p.ID]
         return p.ids_assign
-
-    ## WITH expression assignment (different from ID assignment sentence)
-        # These assignments are temporal and are not stored as vars, end in a
-        # semicolon and are only to be used within WITH expressions
-    @_('ids_assign expr SEMI')
-    def with_assigns(self, p):
-        return {_id: ('tree',p.expr) for _id in p.ids_assign}
-    @_('with_assigns ids_assign expr SEMI')
-    def with_assigns(self, p):
-        new_dict = {_id: ('tree',p.expr) for _id in p.ids_assign}
-        return {**p.with_assigns, **new_dict}
 
     ### STATEMENT ###
 
@@ -365,9 +354,31 @@ class GeckoParser(Parser):
         return ('lambda-x',p.ID,p.expr0,p.expr1)
 
     # expr WITH stuff (5+15a*b^2 with a=sin(4)^2; b=2pi;)
-    @_('expr WITH with_assigns')
+    @_('with_expr %prec MULTI_WITH_EXPR')
     def expr(self, p):
-        return ('with-expr', p.expr, p.with_assigns)
+        return p.with_expr
+    @_('with_expr with_assigns %prec MULTI_WITH_EXPR')
+    def expr(self, p):
+        _, expr0, _dict = p.with_expr
+        return ('with-expr', expr0, {**_dict, **p.with_assigns})
+
+    @_('expr WITH ID ASSIGN expr %prec WITH_EXPR')
+    def with_expr(self, p):
+        return ('with-expr', p.expr0, {p.ID: p.expr1})
+    # @_('expr WITH ID ASSIGN expr with_assigns')
+    # def with_expr(self, p):
+    #     return ('with-expr', p.expr0, {p.ID: p.expr1, **p.with_assigns})
+
+    ## WITH expression assignment (different from ID assignment sentence)
+    # These assignments are temporal and are not stored as vars, end in a
+    # semicolon and are only to be used within WITH expressions
+    @_('COMMA ids_assign expr %prec WITH_ASSIGNS')
+    def with_assigns(self, p):
+        return {_id: p.expr for _id in p.ids_assign}
+    @_('with_assigns COMMA ids_assign expr %prec WITH_ASSIGNS')
+    def with_assigns(self, p):
+        new_dict = {_id: p.expr for _id in p.ids_assign}
+        return {**p.with_assigns, **new_dict}
 
     @_('PIPE expr PIPE')
     def expr(self, p):
