@@ -10,7 +10,7 @@ from settings import *
 from scipy.integrate import quad
 
 class GeckoParser(Parser):
-    debugfile = 'parser.out'
+    # debugfile = 'parser.out'
 
     tokens = GeckoLexer.tokens
 
@@ -249,7 +249,7 @@ class GeckoParser(Parser):
 
     @_('expr')
     def statement(self, p):
-        print(p.expr) # cheap debug xd
+        # print(p.expr) # cheap debug xd
         if p.expr[0] in ['nop']: pass
         else:
             self.ans = self.eval_tree(('tree',p.expr))
@@ -416,9 +416,11 @@ class GeckoParser(Parser):
         # 5j, it's parsed as a complex number not 5 * j (ID)
         if p.mini_term == ('id-lookup','j'):
             return ('number',complex(p.NUMBER+'j'))
-        # 5j(2), it's parsed as 5j * 2 = 10j (complex), not 5 * j(2) (func-call)
+        # Disambiguate 5j * 2 from 5 * j(2) if j() exists!
         if p.mini_term[0]=='func-call' and p.mini_term[1]=='j':
-            return ('binop','*',('number',complex(p.NUMBER+'j')),p.mini_term[2][0])
+            if 'j' in self.funcs.keys():                                            # 5*j(2)
+                return ('binop','*',('number',5),p.mini_term)
+            return ('binop','*',('number',complex(p.NUMBER+'j')),p.mini_term[2][0]) # 5j*(2)
         # Otherwise, regular ol' NUMBER mini_term 5x type of thing
         return ('binop','*',('number',float(p.NUMBER)),p.mini_term)
 
