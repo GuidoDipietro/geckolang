@@ -6,7 +6,7 @@ class GeckoLexer(Lexer):
                 LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR,
                 CALC, EXIT, NEWLINE, TICK, COMMA, PIPE,
                 SEMI, VARS, NEW,
-                INT, FROM, TO, CROCANTE }
+                INT, FROM, TO, CROCANTE, PLOT, AS }
 
     ignore = ' \t'
 
@@ -37,6 +37,8 @@ class GeckoLexer(Lexer):
     ID['int']   = INT
     ID['from']  = FROM
     ID['to']    = TO
+    ID['plot']  = PLOT
+    ID['as']    = AS
 
     NUMBER      = r'([0-9]*[.])?[0-9]+(e\-?[0-9]+)?'
 

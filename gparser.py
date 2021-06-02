@@ -1,6 +1,7 @@
 # import readline # linux stuff. Will fix later
 import math
-from numpy import angle
+import numpy as np
+import matplotlib.pyplot as plt
 from pprint import pprint
 from sly import Parser
 from glexer import GeckoLexer
@@ -44,7 +45,7 @@ class GeckoParser(Parser):
         "atand": lambda x: math.degrees(math.atan(x)),
         "rt": math.sqrt,
         "ln": math.log,
-        "angle": angle,
+        "angle": np.angle,
         "abs": abs,
         "deg": math.degrees,
         "rad": math.radians
@@ -194,7 +195,7 @@ class GeckoParser(Parser):
             print(f"{tab}Error.")
             return 0
 
-    def tree_to_scalar_function(self, tree, ctx):
+    def tree_to_scalar_function(self, tree, ctx=None):
         func = lambda x: self.eval_tree(tree, ctx={**ctx,'x': x} if ctx else {'x': x})
         return func
 
@@ -300,10 +301,33 @@ class GeckoParser(Parser):
             print(self.pprint_num(num))
         else:
             norm = colored(self.pprint_num(abs(num)),'white',attrs=['bold'])
-            phase = colored(f'{self.pprint_num(angle(num))} rad','white',attrs=['bold'])
-            phase_deg = self.pprint_num(math.degrees(angle(num)))
+            phase = colored(f'{self.pprint_num(np.angle(num))} rad','white',attrs=['bold'])
+            phase_deg = self.pprint_num(math.degrees(np.angle(num)))
             print(f"{tab}{norm} {colored('@','green')} {phase} ({phase_deg} deg)")
         return p.expr
+
+    @_('PLOT expr FROM expr TO expr')
+    def statement(self, p):
+        func = self.tree_to_scalar_function(p.expr0)
+        start, stop = self.eval_tree(p.expr1), self.eval_tree(p.expr2)
+        x_axis = np.linspace(start=start, stop=stop, num=200)
+
+        plt.figure()
+        plt.plot(x_axis, np.array([func(x) for x in x_axis]))
+        plt.ion()
+        plt.show()
+
+    @_('PLOT expr FROM expr TO expr AS ID')
+    def statement(self, p):
+        func = self.tree_to_scalar_function(p.expr0)
+        start, stop = self.eval_tree(p.expr1), self.eval_tree(p.expr2)
+        x_axis = np.linspace(start=start, stop=stop, num=200)
+
+        plt.figure()
+        plt.title(p.ID)
+        plt.plot(x_axis, np.array([func(x) for x in x_axis]))
+        plt.ion()
+        plt.show()
 
     @_('VARS')
     def statement(self, p):
