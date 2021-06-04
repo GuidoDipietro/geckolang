@@ -65,13 +65,13 @@ An interactive REPL devised for quickly getting calculations done.
 
 ---
 
-Sentences are the big 'blocks' that make up _Gecko_.  
+Statements are the big 'blocks' that make up _Gecko_.  
 They are like commands that you enter to the REPL for _Gecko_ to eat.  
-Multiple sentences are separated by comma or by newline.  
+Multiple Statements are separated by comma or by newline.  
 
 Everything _Gecko_ understands is the following:
 
-## Sentences
+## Statements
 - Any valid *expression* **(see next section)**
 - *Variable assignments*
     - `a=5` -> **a=5**
@@ -80,11 +80,14 @@ Everything _Gecko_ understands is the following:
 - *Function definition*
     - `f(x,y) = x+y`
     - `g(x,y) = 2f(x,y)`
+- *Plotting*
+    - `plot x^2 from 0 to 5`
+    - `f(x)=2x-5; plot f(x) from -10 to 10 as MY_PLOT`
 - *`calc` command*
-    - `a=2, d=10a, a=5, calc d` -> **d = 50**
+    - `a=2; d=10a; a=5; calc d` -> **d = 50**
 - *`polar` command*
-    - `d=5+3j, polar d`, or
-    - `d=5+3j, d polar`
+    - `d=5+3j; polar d`, or
+    - `d=5+3j; d polar`
     - Output: `5.831 @ 0.5404 rad (30.9638 deg)`
 - *`vars` command* shows all assigned global variables and its values
 - *`new` command* resets all variables and functions
@@ -99,10 +102,10 @@ Valid expressions plus some examples of 'real-life' usage:
     - Complex numbers: `4+2j`, `-0.3j + 3`, `rt(-16)+1`
 - *IDs*
     - Made from any combination of letters, numbers, and `_`, starting with a non-number. They can store a value, just like variables do in most programming languages (or any?)
-    - `value, var1, total_result, n1, _1st_attempt`, etc.
+    - Examples are `value, var1, total_result, n1, _1st_attempt`, etc.
 - *Common binary operations:*
     - `+ - * / ^`, as in `5+3`, `0.2^3`
-- *Unary minus*: `a=2, result = -a` -> **result = -2**
+- *Unary minus*: `a=2; result = -a` -> **result = -2**
 - *Built-in math functions and constants*
     - `sin, cos, tan`
         - inverse function by prepending `a-` (as in `asin`)
@@ -111,22 +114,28 @@ Valid expressions plus some examples of 'real-life' usage:
         - **Bonus:** shorthand for `abs(x)` is `|x|`
 - *Constant with implicit multiplication*
     - `2x`, `5sin(4)`, `0.5(2+3)`, `6x^3`, etc.
-- *`with` expression* **(assignments end in `;`)**
-    - `2+a with a = 0.1;` -> **2.1**
-    - `2alpha+gamma with alpha=6; gamma=2;` -> **14**
+- *`with` expression*
+    - `2+a with a = 0.1` -> **2.1**
+    - `2alpha+gamma with alpha=6, gamma=2` -> **14**
     - **Temporary variables assigned in `with` statements are not stored!**
 - *`then` expression*
     - `3^2+4^2 then rt(x)` -> **5**
-    - `x = 10, result = 14-2^2 then 'var x/var'` -> **result = 1** (`var` could be replaced by any other valid ID)
+    - `x = 10; result = 14-2^2 then 'var x/var'` -> **result = 1** (`var` could be replaced by any other valid ID)
 - *Function calls*
-    - `sum(x,y)=x+y, sum(5,6)` -> **11**
-    - `mult(x,y)=x*y, square(x) = mult(x,x), square(10)` -> **100**
-    - `double(x)=2x, double(double(3))` -> **12**
+    - `sum(x,y)=x+y; sum(5,6)` -> **11**
+    - `mult(x,y)=x*y; square(x) = mult(x,x); square(10)` -> **100**
+    - `double(x)=2x; double(double(3))` -> **12**
     - The **variables** and **functions** namespace is disjoint, meaning you can have a variable called `sum` with a value of `69`, and also a function called `sum` doing something else, with **no problems at all.**
+- *Integrals*
+    - `int x from 0 to 5` -> **12.5**
+    - `f(x)=sin(x); int f(x)+1 from 0 to pi` -> **5.1416**
+- *$ operand to save parentheses*
+    - `1+2 $ * 10` -> **30**
+    - `int x from 0 to 1 $ + int x from 4 to 5` == `(int x from 0 to 1) + (int x from 4 to 5)`
 - *Special `ans` ID*, stores last printed value or 0
     - `a=10` -> **ans = 0**
-    - `a=10, 15a` -> **ans = 150**
-    - `sin(4^2), result = 10ans` -> **result = 10sin(4^2)**
+    - `a=10; 15a` -> **ans = 150**
+    - `sin(4^2); result = 10ans` -> **result = 10sin(4^2)**
 
 # Motivation
 

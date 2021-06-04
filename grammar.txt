@@ -7,6 +7,8 @@ statement       :           EXIT
                 |           ids_assign expr
                 |           func_shape ASSIGN expr
                 |           CALC ID
+                |           PLOT expr FROM expr TO expr
+                |           PLOT expr FROM expr TO expr AS ID
                 |           POLAR expr
                 |           expr POLAR
                 |           VARS
