@@ -92,6 +92,8 @@ if __name__ == "__main__":
         ("j(x)=2x; 5j(2)", 20),
         ("j(x)=x^2+1; 5 j(2)", 25),
         ("first=5j(2); j(x)=10x; second=5j(2); first+second", 10j+100),
+        ("e0 = 15; 8e0", 15*8),
+        ("8e0", 0),
     ]
 
     for (expr, val) in tests:

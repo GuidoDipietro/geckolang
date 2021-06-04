@@ -40,7 +40,7 @@ class GeckoLexer(Lexer):
     ID['plot']  = PLOT
     ID['as']    = AS
 
-    NUMBER      = r'([0-9]*[.])?[0-9]+(e\-?[0-9]+)?'
+    NUMBER      = r'([0-9]*[.])?[0-9]+(e\-?[1-9][0-9]*)?'
 
     PLUS        = r'\+'
     MINUS       = r'-'
