@@ -20,6 +20,13 @@ An interactive REPL devised for quickly getting calculations done.
 ### Built-in math functions and constants
 ![Builtin math example 1](img/builtin_math_1.PNG)  
 
+<!-- One-line function definitions -->
+### Custom functions
+![Fuctions 1](img/funcs_1.PNG)  
+![Fuctions 2](img/funcs_2.PNG)  
+![Fuctions 3](img/funcs_3.PNG)  
+![Fuctions 4](img/funcs_4.PNG)  
+
 <!-- Complex numbers -->
 ### Complex numbers support
 ![Complex numbers example 1](img/complex_1.PNG)  
@@ -37,16 +44,6 @@ An interactive REPL devised for quickly getting calculations done.
 ### Var dump
 ![Var dump example 1](img/vars_1.PNG)  
 
-### Expression reducer operator
-![Haskell-like $ operator](img/crocante.PNG)
-
-<!-- One-line function definitions -->
-### Functions
-![Fuctions 1](img/funcs_1.PNG)  
-![Fuctions 2](img/funcs_2.PNG)  
-![Fuctions 3](img/funcs_3.PNG)  
-![Fuctions 4](img/funcs_4.PNG)  
-
 <!-- ONE LINE INTEGRATION -->
 ### Integrals
 ![Integrals 1](img/integral_1.PNG)  
@@ -55,8 +52,12 @@ An interactive REPL devised for quickly getting calculations done.
 ![Integrals 4](img/integral_4.PNG)  
 
 <!-- PLOTTING -->
+### Plots
 ![Plots 1](img/plot_1.PNG)  
 ![Plots 2](img/plot_2.PNG)  
+
+### Expression reducer operator ("parentheses saver")
+![Haskell-like $ operator](img/crocante.PNG)  
 
 # Gecko REPL feature description
 
