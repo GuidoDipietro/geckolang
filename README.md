@@ -37,9 +37,26 @@ An interactive REPL devised for quickly getting calculations done.
 ### Var dump
 ![Var dump example 1](img/vars_1.PNG)  
 
-<!-- One-line function definitions TODO -->
+### Expression reducer operator
+![Haskell-like $ operator](img/crocante.PNG)
 
-<!-- ONE LINE INTEGRATION TODO -->
+<!-- One-line function definitions -->
+### Functions
+![Fuctions 1](img/funcs_1.PNG)  
+![Fuctions 2](img/funcs_2.PNG)  
+![Fuctions 3](img/funcs_3.PNG)  
+![Fuctions 4](img/funcs_4.PNG)  
+
+<!-- ONE LINE INTEGRATION -->
+### Integrals
+![Integrals 1](img/integral_1.PNG)  
+![Integrals 2](img/integral_2.PNG)  
+![Integrals 3](img/integral_3.PNG)  
+![Integrals 4](img/integral_4.PNG)  
+
+<!-- PLOTTING -->
+![Plots 1](img/plot_1.PNG)  
+![Plots 2](img/plot_2.PNG)  
 
 # Gecko REPL feature description
 
