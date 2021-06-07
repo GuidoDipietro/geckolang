@@ -306,26 +306,26 @@ class GeckoParser(Parser):
             print(f"{tab}{norm} {colored('@','green')} {phase} ({phase_deg} deg)")
         return p.expr
 
-    @_('PLOT expr FROM expr TO expr')
+    @_( 'PLOT expr FROM expr TO expr',
+        'PLOT expr FROM expr TO expr AS ID',
+        'PLOT expr FROM expr TO expr AS STRING')
     def statement(self, p):
         func = self.tree_to_scalar_function(p.expr0)
         start, stop = self.eval_tree(p.expr1), self.eval_tree(p.expr2)
         x_axis = np.linspace(start=start, stop=stop, num=200)
 
         plt.figure()
+        plt.xlabel("x")
+        plt.ylabel("y")
+        try: #lol
+            try:
+                plt.title(p.ID)
+            except:
+                plt.title(p.STRING[1:-1])
+        except:
+            ...
         plt.plot(x_axis, np.array([func(x) for x in x_axis]))
-        plt.ion()
-        plt.show()
-
-    @_('PLOT expr FROM expr TO expr AS ID')
-    def statement(self, p):
-        func = self.tree_to_scalar_function(p.expr0)
-        start, stop = self.eval_tree(p.expr1), self.eval_tree(p.expr2)
-        x_axis = np.linspace(start=start, stop=stop, num=200)
-
-        plt.figure()
-        plt.title(p.ID)
-        plt.plot(x_axis, np.array([func(x) for x in x_axis]))
+        plt.grid()
         plt.ion()
         plt.show()
 
