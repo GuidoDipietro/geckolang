@@ -1,4 +1,5 @@
 aver.py
+*.zip
 __pycache__/
 parser.out
 *.pdf
