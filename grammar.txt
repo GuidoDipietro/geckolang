@@ -9,6 +9,7 @@ statement       :           EXIT
                 |           CALC ID
                 |           PLOT expr FROM expr TO expr
                 |           PLOT expr FROM expr TO expr AS ID
+                |           PLOT expr FROM expr TO expr AS STRING
                 |           POLAR expr
                 |           expr POLAR
                 |           VARS
