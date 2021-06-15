@@ -31,6 +31,8 @@ expr            :           expr + expr
                 |           expr ^ expr
                 |           - expr                              %prec UMINUS
                 |           NUMBER
+                |           NUMBER AT expr
+                |           NUMBER AT DEGSYM expr
                 |           mini_term
                 |           PIPE expr PIPE
                 |           expr THEN expr
@@ -60,7 +62,7 @@ precedence = (
     ('right', ASSIGN),
     ('left', INTEGRAL),
     ('left', THEN),
-    ('left', COMPO_WITH_EXPR),
+    ('left', WITH_EXPR),
     ('left', MONO_WITH_EXPR, COMMA),
     ('right', WITH_ASSIGNS),
     ('left', PLUS, MINUS),
@@ -68,4 +70,6 @@ precedence = (
     ('right', CONSTANT),
     ('right', MATHFUNC, UMINUS),
     ('right', POW),
+    ('nonassoc', NUMBER),
+    ('nonassoc', AT, DEGSYM),
 )

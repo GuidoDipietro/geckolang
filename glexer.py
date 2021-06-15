@@ -3,7 +3,7 @@ from sly import Lexer
 class GeckoLexer(Lexer):
     tokens = {  ID, PLUS, MINUS, TIMES,
                 DIV, POW, MATHFUNC, NUMBER,
-                LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR,
+                LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR, AT, DEGSYM,
                 CALC, EXIT, NEWLINE, TICK, COMMA, PIPE,
                 SEMI, VARS, NEW,
                 INT, FROM, TO, CROCANTE, PLOT, AS, STRING }
@@ -57,6 +57,8 @@ class GeckoLexer(Lexer):
     COMMA       = r','
     PIPE        = r'\|'
     CROCANTE    = r'\$'
+    AT          = r'@'
+    DEGSYM      = r'<'
 
     def error(self, t):
         print("Illegal character '%s'" % t.value[0])

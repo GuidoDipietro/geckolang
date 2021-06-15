@@ -132,6 +132,12 @@ I'll list all valid expressions, plus some examples of 'real-life' usage:
         - `-0.3j + 3`
         - `rt(-16)+1`
         - `3e5 + 5e10j`
+    - Complex number - polar notation
+        - `14@0.5pi`, absolute value `14`, angle `0.5pi` radians
+        - `14 @ 0.5pi`
+        - `14@<90`, absolute value `14`, angle `90` degrees
+        - `14 @ <90`
+        - `14 @< 90`
 - **IDs**
     - Made from any combination of letters, numbers, and `_`, starting with a non-number. They can store a value, just like variables do in most programming languages (or any?)
     - Examples are `value, var1, total_result, n1, _1st_attempt`, etc.

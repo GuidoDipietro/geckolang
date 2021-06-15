@@ -1,5 +1,6 @@
 # import readline # linux stuff. Will fix later
 import math
+from cmath import rect
 import numpy as np
 import matplotlib.pyplot as plt
 from pprint import pprint
@@ -28,6 +29,8 @@ class GeckoParser(Parser):
         ('right', CONSTANT),
         ('right', MATHFUNC, UMINUS),
         ('right', POW),
+        ('nonassoc', NUMBER),
+        ('nonassoc', AT, DEGSYM),
     )
 
     mathfuncs = {
@@ -363,7 +366,15 @@ class GeckoParser(Parser):
 
     @_('NUMBER')
     def expr(self, p):
-        return ('number',float(p.NUMBER))
+        return ('number', float(p.NUMBER))
+
+    @_('NUMBER AT expr')
+    def expr(self, p):
+        return ('number', rect(float(p.NUMBER), self.eval_tree(p.expr)))
+
+    @_('NUMBER AT DEGSYM expr')
+    def expr(self, p):
+        return ('number', rect(float(p.NUMBER), math.radians(self.eval_tree(p.expr))))
 
     @_('mini_term')
     def expr(self, p):

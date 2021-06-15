@@ -3,6 +3,7 @@ from glexer import GeckoLexer
 from colorama import init
 from termcolor import colored
 import math
+from cmath import rect
 import sys
 import os
 
@@ -94,6 +95,11 @@ if __name__ == "__main__":
         ("first=5j(2); j(x)=10x; second=5j(2); first+second", 10j+100),
         ("e0 = 15; 8e0", 15*8),
         ("8e0", 0),
+        ("1@1", rect(1,1)),
+        ("1@<1", rect(1,math.radians(1))),
+        ("1@1 + 2@2", rect(1,1) + rect(2,2)),
+        ("1@<1 + 2@2", rect(1,math.radians(1)) + rect(2,2)),
+        ("14@0.5pi - 14 @ <90", 0),
     ]
 
     for (expr, val) in tests:
