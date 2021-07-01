@@ -251,7 +251,12 @@ class GeckoParser(Parser):
     def statement(self, p):
         exit()
 
-    @_('expr')
+    @_('TITLE')
+    def statement(self, p):
+        # Reserved for future use
+        ...
+
+    @_('expr', 'expr TITLE')
     def statement(self, p):
         # print(p.expr) # cheap debug xd
         if p.expr[0] in ['nop']: pass

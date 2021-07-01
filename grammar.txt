@@ -3,7 +3,9 @@ statements      :           statements \n statement
                 |           statement
 
 statement       :           EXIT
+                |           TITLE
                 |           expr
+                |           expr TITLE
                 |           ids_assign expr
                 |           func_shape ASSIGN expr
                 |           CALC ID

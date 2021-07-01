@@ -6,9 +6,10 @@ class GeckoLexer(Lexer):
                 LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR, AT, DEGSYM,
                 CALC, EXIT, NEWLINE, TICK, COMMA, PIPE,
                 SEMI, VARS, NEW,
-                INT, FROM, TO, CROCANTE, PLOT, AS, STRING }
+                INT, FROM, TO, CROCANTE, PLOT, AS, STRING, TITLE }
 
     ignore = ' \t'
+    ignore_comment = r'/\*.*\*/'
 
     ID          = r'[a-zA-Z_][0-9a-zA-Z_]*'
     ID['sin']   = MATHFUNC
@@ -42,6 +43,7 @@ class GeckoLexer(Lexer):
 
     NUMBER      = r'([0-9]*[.])?[0-9]+(e\-?[1-9][0-9]*)?'
     STRING      = r'("[^\"]*")'
+    TITLE       = r'\#.*'
 
     PLUS        = r'\+'
     MINUS       = r'-'
