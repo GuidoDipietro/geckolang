@@ -1,6 +1,8 @@
+build.py
 aver.py
 bulid.py
 *.zip
 __pycache__/
 parser.out
 *.pdf
+promo/
