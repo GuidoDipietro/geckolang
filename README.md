@@ -4,6 +4,9 @@
 
 An interactive REPL devised for quickly getting calculations done.
 
+> Execute `gecko.py` to run the REPL.  
+> Requires Python 3.6 or higher.
+
 # Features
 
 <!-- Clean expr syntax -->
