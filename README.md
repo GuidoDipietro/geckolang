@@ -4,8 +4,9 @@
 
 An interactive REPL devised for quickly getting calculations done.
 
-> Execute `gecko.py` to run the REPL.  
-> Requires Python 3.6 or higher.
+> Run `gecko.py` (`gecko.py`, `python3 gecko.py`, etc.) to start the REPL.  
+> Requires Python 3.6 or higher.  
+> Read `DEVELOPMENT.md` for further information.
 
 # Features
 

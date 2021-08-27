@@ -10,6 +10,7 @@ from colorama import init
 from termcolor import colored
 from settings import *
 from scipy.integrate import quad
+from sys import exit
 
 class GeckoParser(Parser):
     # debugfile = 'parser.out'
@@ -305,6 +306,7 @@ class GeckoParser(Parser):
         'expr POLAR')
     def statement(self, p):
         num = self.eval_tree(p.expr)
+        self.ans = num
         if num.imag == 0:
             print(self.pprint_num(num))
         else:
@@ -499,7 +501,7 @@ def REPL(lexer, parser):
 g(r"                       )/_         ")+pipe+"""\n"""+\
 g(r'             _.--..---"-,--c_      ')+pipe+"""   https://github.com/GuidoDipietro/geckolang\n"""+\
 g(r"        \L..'           ._O__)_    ")+pipe+"""\n"""+\
-g(r",-.     _.+  _  \..--( /           ")+pipe+"""   """+b('Gecko REPL')+""" - v0.0.1 (2021-05)\n"""+\
+g(r",-.     _.+  _  \..--( /           ")+pipe+"""   """+b('Gecko REPL')+""" - v0.0.1 (2021-07)\n"""+\
 g(r"  `\.-''__.-' \ (     \_           ")+pipe+"""\n"""+\
 g(r"    `'''       `\__   /\           ")+pipe+"""   Made by Guido Dipietro - Artwork by Andreas Freise\n"""+\
 g(r"                ')                 ")+pipe+"""\n"""
