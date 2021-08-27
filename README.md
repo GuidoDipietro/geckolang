@@ -7,6 +7,27 @@ An interactive REPL devised for quickly getting calculations done.
 > Execute `gecko.py` to run the REPL.  
 > Requires Python 3.6 or higher.
 
+# Development
+Requirements for development are
+```
+colorama==0.4.4
+cycler==0.10.0
+kiwisolver==1.3.1
+matplotlib==3.4.3
+numpy==1.21.2
+Pillow==8.3.1
+pyparsing==2.4.7
+python-dateutil==2.8.2
+scipy==1.7.1
+six==1.16.0
+sly==0.4
+termcolor==1.1.0
+```
+
+All of them can be installed by running:
+`pip3 install -r requirements.txt`
+
+
 # Features
 
 <!-- Clean expr syntax -->
