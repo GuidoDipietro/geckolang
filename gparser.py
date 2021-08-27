@@ -501,7 +501,7 @@ def REPL(lexer, parser):
 g(r"                       )/_         ")+pipe+"""\n"""+\
 g(r'             _.--..---"-,--c_      ')+pipe+"""   https://github.com/GuidoDipietro/geckolang\n"""+\
 g(r"        \L..'           ._O__)_    ")+pipe+"""\n"""+\
-g(r",-.     _.+  _  \..--( /           ")+pipe+"""   """+b('Gecko REPL')+""" - v0.0.1 (2021-07)\n"""+\
+g(r",-.     _.+  _  \..--( /           ")+pipe+"""   """+b('Gecko REPL')+""" - v0.1.0 (2021-08)\n"""+\
 g(r"  `\.-''__.-' \ (     \_           ")+pipe+"""\n"""+\
 g(r"    `'''       `\__   /\           ")+pipe+"""   Made by Guido Dipietro - Artwork by Andreas Freise\n"""+\
 g(r"                ')                 ")+pipe+"""\n"""
