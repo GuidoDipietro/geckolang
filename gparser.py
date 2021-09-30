@@ -98,7 +98,8 @@ class GeckoParser(Parser):
         print(f"{tab}{colored('Final',FINAL_COLOR,attrs=['bold'])} {_id} = {self.pprint_num(val)}")
     # Print using in magenta
     def pprint_using(self, _id, val):
-        print(f"{tab}{colored('using',USING_COLOR)} {_id} = {self.pprint_num(val)}")
+        if (not (_id=="j" and val==1j) ):
+            print(f"{tab}{colored('using',USING_COLOR)} {_id} = {self.pprint_num(val)}")
 
     # Evaluate AST
     def eval_tree(self, tree, ctx=None):
