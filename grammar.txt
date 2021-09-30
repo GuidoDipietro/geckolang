@@ -53,6 +53,7 @@ mini_term       :           ID
                 |           NUMBER mini_term                    %prec CONSTANT
                 |           LPAREN expr RPAREN mini_term        %prec CONSTANT
                 |           NUMBER mini_term POW expr
+                |           LPAREN expr RPAREN mini_term POW expr
                 |           MATHFUNC LPAREN expr RPAREN
                 |           func_shape
                 |           LPAREN expr RPAREN

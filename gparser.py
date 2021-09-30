@@ -52,7 +52,7 @@ class GeckoParser(Parser):
         "angle": np.angle,
         "abs": abs,
         "deg": math.degrees,
-        "rad": math.radians
+        "rad": math.radians,
     }
 
     binops = {
@@ -67,10 +67,13 @@ class GeckoParser(Parser):
         self.ids = {
             "pi": [('number',math.pi),math.pi],
             "e": [('number',math.e),math.e],
-            "tau": [('number',math.tau),math.tau]
+            "tau": [('number',math.tau),math.tau],
+            "j": [('number',1j),1j]
         }
-        self.funcs = {}
-        self.mathconsts = ["pi","e","tau"]
+        self.funcs = {
+            'j': (['x'], ('binop', '*', ('number', 1j), ('id-lookup', 'x')))
+        }
+        self.mathconsts = list(self.ids.keys())
         self.printed_ids = []
         self.ans = 0
 
@@ -452,18 +455,9 @@ class GeckoParser(Parser):
     def mini_term(self, p):
         return ('id-lookup',p.ID)
 
-    # complex numbers match this rule, needs disambiguation
     @_('NUMBER mini_term %prec CONSTANT')
     def mini_term(self, p):
-        # 5j, it's parsed as a complex number not 5 * j (ID)
-        if p.mini_term == ('id-lookup','j'):
-            return ('number',complex(p.NUMBER+'j'))
-        # Disambiguate 5j * 2 from 5 * j(2) if j() exists!
-        if p.mini_term[0]=='func-call' and p.mini_term[1]=='j':
-            if 'j' in self.funcs.keys():                                            # 5*j(2)
-                return ('binop','*',('number',5),p.mini_term)
-            return ('binop','*',('number',complex(p.NUMBER+'j')),p.mini_term[2][0]) # 5j*(2)
-        # Otherwise, regular ol' NUMBER mini_term 5x type of thing
+        # Regular ol' NUMBER mini_term 5x type of thing
         return ('binop','*',('number',float(p.NUMBER)),p.mini_term)
 
     @_('LPAREN expr RPAREN mini_term %prec CONSTANT')
@@ -473,6 +467,10 @@ class GeckoParser(Parser):
     @_('NUMBER mini_term POW expr')
     def mini_term(self, p):
         return ('binop','*',('number',float(p.NUMBER)),('binop','^',p.mini_term,p.expr))
+
+    @_('LPAREN expr RPAREN mini_term POW expr')
+    def mini_term(self, p):
+        return ('binop','*',p.expr0,('binop','^',p.mini_term,p.expr1))
 
     @_('MATHFUNC LPAREN expr RPAREN')
     def mini_term(self, p):
