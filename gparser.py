@@ -303,9 +303,12 @@ class GeckoParser(Parser):
 
     @_('CALC ID')
     def statement(self, p):
-        tree = self.ids[p.ID][0]
-        self.ids[p.ID][1] = self.eval_tree(tree)
-        self.pprint_final(p.ID, self.ids[p.ID][1])
+        if (p.ID not in self.ids.keys()):
+            print(tab + colored(f"Can't recalculate non-existing id ", INVALID_COLOR) + p.ID)
+        else:
+            tree = self.ids[p.ID][0]
+            self.ids[p.ID][1] = self.eval_tree(tree)
+            self.pprint_final(p.ID, self.ids[p.ID][1])
 
     @_( 'POLAR expr',
         'expr POLAR')
