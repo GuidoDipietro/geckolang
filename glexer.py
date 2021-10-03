@@ -2,7 +2,7 @@ from sly import Lexer
 
 class GeckoLexer(Lexer):
     tokens = {  ID, PLUS, MINUS, TIMES,
-                DIV, POW, MATHFUNC, NUMBER,
+                DIV, POW, MOD, MATHFUNC, NUMBER,
                 LPAREN, RPAREN, ASSIGN, THEN, WITH, POLAR, AT, DEGSYM,
                 CALC, EXIT, NEWLINE, TICK, COMMA, PIPE,
                 SEMI, VARS, NEW,
@@ -50,6 +50,7 @@ class GeckoLexer(Lexer):
     TIMES       = r'\*'
     DIV         = r'/'
     POW         = r'\^'
+    MOD         = r'%'
     LPAREN      = r'\('
     RPAREN      = r'\)'
     ASSIGN      = r'='

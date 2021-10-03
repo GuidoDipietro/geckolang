@@ -26,7 +26,7 @@ class GeckoParser(Parser):
         ('left', MONO_WITH_EXPR, COMMA),
         ('right', WITH_ASSIGNS),
         ('left', PLUS, MINUS),
-        ('left', TIMES, DIV),
+        ('left', TIMES, DIV, MOD),
         ('right', CONSTANT),
         ('right', MATHFUNC, UMINUS),
         ('right', POW),
@@ -60,7 +60,8 @@ class GeckoParser(Parser):
         '-': lambda x,y: x-y,
         '*': lambda x,y: x*y,
         '/': lambda x,y: x/y,
-        '^': lambda x,y: x**y
+        '^': lambda x,y: x**y,
+        '%': lambda x,y: x%y,
     }
 
     def __init__(self):
@@ -367,7 +368,8 @@ class GeckoParser(Parser):
         'expr MINUS expr',
         'expr TIMES expr',
         'expr DIV expr',
-        'expr POW expr')
+        'expr POW expr',
+        'expr MOD expr')
     def expr(self, p):
         return ('binop',p[1],p.expr0,p.expr1)
 
